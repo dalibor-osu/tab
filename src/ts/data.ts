@@ -1,8 +1,10 @@
 import { currentBackgroundBlob } from './background';
-import { commands } from './commands';
+import { commands, describeGrants, hasScriptCommands } from './commands';
 import {
     exportOverlay,
     exportPresetsCheck,
+    exportScriptWarning,
+    importScriptWarning,
     importAsPresetRow,
     importModeApply,
     importModePreset,
@@ -49,6 +51,13 @@ interface PendingImport {
 
 let pendingImport: PendingImport | null = null;
 
+const EXPORT_SCRIPT_WARNING =
+    'Your commands include scripts. Whoever imports this file gets code that runs on their computer when they use ' +
+    'those commands - share it only with people who trust you, or untick Commands.';
+const IMPORT_SCRIPT_WARNING =
+    'This file contains script commands. Their code runs on this computer whenever you use them. Only continue if ' +
+    'you fully trust where the file came from, and review the code in Customize → Commands before running it.';
+
 export function exportParts(): Parts {
     const parts: Parts = { ...ALL_PARTS };
     PART_KEYS.forEach(key => {
@@ -65,6 +74,8 @@ export function openExportModal() {
         el.checked = true;
     });
     exportPresetsCheck.checked = false;
+    exportScriptWarning.hidden = !hasScriptCommands(commands);
+    exportScriptWarning.textContent = EXPORT_SCRIPT_WARNING + describeGrants(commands);
     showModal(exportOverlay);
 }
 
@@ -172,13 +183,17 @@ export async function readImportFile(file: File) {
         return;
     }
     const preset = normalizePreset(payload);
-    const embedded = sanitizePresets(payload.presets).length;
+    const embeddedPresets = sanitizePresets(payload.presets);
+    const embedded = embeddedPresets.length;
     if (!preset && !embedded) {
         alert('That file does not contain anything this page can import.');
         return;
     }
     pendingImport = { payload, preset, embedded };
     importSummary.textContent = describeImport(preset, embedded);
+    const scripted = [preset, ...embeddedPresets].flatMap(item => (item && item.commands) || []);
+    importScriptWarning.hidden = !hasScriptCommands(scripted);
+    importScriptWarning.textContent = IMPORT_SCRIPT_WARNING + describeGrants(scripted);
     importAsPresetRow.hidden = !preset;
     importModeApply.checked = true;
     importNameGroup.hidden = true;

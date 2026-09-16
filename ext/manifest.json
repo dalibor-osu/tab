@@ -8,6 +8,7 @@
     "newtab": "index.html"
   },
   "permissions": ["favicon"],
+  "optional_permissions": ["tabs", "bookmarks", "clipboardRead"],
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

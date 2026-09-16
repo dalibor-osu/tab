@@ -8,19 +8,32 @@ export interface Shortcut {
     url: string;
 }
 
-export interface SearchCommand {
+export interface CommandBase {
     name: string;
+    hint: string;
+}
+
+export interface SearchCommand extends CommandBase {
     type: 'search';
     url: string;
 }
 
-export interface OpenCommand {
-    name: string;
+export interface OpenCommand extends CommandBase {
     type: 'open';
     urls: string[];
 }
 
-export type Command = SearchCommand | OpenCommand;
+export type Capability =
+    'settings' | 'shortcuts' | 'commands' | 'history' | 'widgets' | 'clipboard' | 'tabs' | 'bookmarks';
+
+export interface ScriptCommand extends CommandBase {
+    type: 'script';
+    code: string;
+    hosts: string[];
+    grants: Capability[];
+}
+
+export type Command = SearchCommand | OpenCommand | ScriptCommand;
 
 export interface Engine {
     id: string;

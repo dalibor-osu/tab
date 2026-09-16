@@ -179,12 +179,12 @@ interface FetchResult {
     text: string;
 }
 
-export async function proxyFetch(item: WidgetItem, url: unknown, init: unknown): Promise<FetchResult> {
+export async function proxyFetch(hosts: string[], url: unknown, init: unknown): Promise<FetchResult> {
     if (typeof url !== 'string' || !/^https:\/\//i.test(url)) {
         throw new Error('Only https URLs can be fetched.');
     }
     const host = new URL(url).hostname.toLowerCase();
-    if (!item.settings.hosts.some(allowed => host === allowed || host.endsWith('.' + allowed))) {
+    if (!hosts.some(allowed => host === allowed || host.endsWith('.' + allowed))) {
         throw new Error(`Host ${host} is not allowed for this widget.`);
     }
     const options = (init && typeof init === 'object' ? init : {}) as Record<string, unknown>;
@@ -282,7 +282,7 @@ export async function handleWidgetMessage(target: WidgetTarget, item: WidgetItem
         reply(true);
     } else if (message.type === 'fetch') {
         try {
-            reply(await proxyFetch(item, message.url, message.init));
+            reply(await proxyFetch(item.settings.hosts, message.url, message.init));
         } catch (error) {
             reply(null, error instanceof Error && error.message ? error.message : 'The request failed.');
         }

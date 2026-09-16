@@ -826,7 +826,7 @@
         </div>
 
         <div class="modal-overlay" id="commandOverlay">
-            <div class="modal">
+            <div class="modal modal-wide">
                 <h3 class="modal-title" id="commandModalTitle">Add Command</h3>
                 <div class="form-group">
                     <label class="form-label" for="commandName">Name</label>
@@ -834,10 +834,23 @@
                     <div class="settings-hint">Letters, numbers, - and _ only. You run it as /name.</div>
                 </div>
                 <div class="form-group">
+                    <label class="form-label" for="commandHint">Description (optional)</label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        id="commandHint"
+                        placeholder="Opens my work tabs"
+                        maxlength="80"
+                        autocomplete="off"
+                    />
+                    <div class="settings-hint">Shown next to the command when you type / in the search box.</div>
+                </div>
+                <div class="form-group">
                     <label class="form-label" for="commandType">Type</label>
                     <select class="form-select" id="commandType">
                         <option value="open">Open links</option>
                         <option value="search">Search template</option>
+                        <option value="script">Run a script</option>
                     </select>
                 </div>
                 <div class="form-group" id="commandUrlsGroup">
@@ -857,6 +870,47 @@
                         placeholder="https://www.youtube.com/results?search_query=%s"
                     />
                     <div class="settings-hint">Use %s where the query should go.</div>
+                </div>
+                <div id="commandCodeGroup" hidden>
+                    <p class="modal-text modal-error">
+                        This code runs on your computer every time you use the command. Never paste code you do not
+                        fully understand or trust.
+                    </p>
+                    <div class="form-group">
+                        <label class="form-label" for="commandCode">JavaScript</label>
+                        <textarea
+                            class="form-textarea code"
+                            id="commandCode"
+                            spellcheck="false"
+                            autocapitalize="off"
+                            autocomplete="off"
+                            placeholder="tab.search('site:example.com ' + tab.args);"
+                        ></textarea>
+                        <div class="settings-hint">
+                            Runs in a sandbox and talks to the page only through the tab object. Always available:
+                            tab.args (the text after the command), tab.open(url), tab.search(text, newTab),
+                            tab.toast(text). Everything else below returns a promise, so use await. A returned value is
+                            shown as a toast, and the command ends when your code finishes.
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">The script may also use</label>
+                        <div class="modal-options compact" id="commandGrants"></div>
+                        <div class="settings-hint">
+                            Settings: tab.settings.get() / set({…}). Shortcuts: tab.shortcuts.list() / add(name, url) /
+                            remove(name). Commands: tab.commands.list(). History: tab.history.list() / add(text) /
+                            clear(). Widgets: tab.widgets.list() / update(id, {…}). Clipboard: tab.copy(text) /
+                            tab.paste(). Browser tabs (extension): tab.tabs.list() / open(url) / activate(id) /
+                            close(id). Bookmarks (extension): tab.bookmarks.search(text) / add(title, url). The
+                            extension asks for the matching browser permission when you save.
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="commandHosts"
+                            >Allowed hosts for tab.fetch (comma separated)</label
+                        >
+                        <input type="text" class="form-input" id="commandHosts" placeholder="api.example.com" />
+                    </div>
                 </div>
                 <div class="modal-buttons">
                     <button class="modal-btn btn-cancel" id="commandCancelBtn">Cancel</button>
@@ -882,6 +936,15 @@
         </div>
 
         <div class="toast" id="toast" hidden></div>
+
+        <div class="support-notice" id="supportNotice" hidden>
+            <span>
+                This website version will eventually stop being supported. Development continues in the browser
+                extension.
+            </span>
+            <a href="https://github.com/dalibor-osu/tab" target="_blank" rel="noopener noreferrer">Get it on GitHub</a>
+            <button type="button" id="supportNoticeClose" title="Dismiss">×</button>
+        </div>
 
         <div class="modal-overlay" id="widgetOverlay">
             <div class="modal modal-wide">
@@ -983,6 +1046,7 @@
             <div class="modal">
                 <h3 class="modal-title">Export</h3>
                 <p class="modal-text">Pick what goes into the file. Untick anything you don't want to share.</p>
+                <p class="modal-text modal-error" id="exportScriptWarning" hidden></p>
                 <div class="form-group modal-options">
                     <label>
                         <input type="checkbox" data-export-part="style" checked />
@@ -1011,6 +1075,7 @@
             <div class="modal">
                 <h3 class="modal-title">Import</h3>
                 <p class="modal-text" id="importSummary"></p>
+                <p class="modal-text modal-error" id="importScriptWarning" hidden></p>
                 <div class="form-group modal-options">
                     <label>
                         <input type="radio" name="importMode" id="importModeApply" value="apply" checked />

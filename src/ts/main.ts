@@ -119,7 +119,8 @@ import {
 import { CUSTOM_CSS_KEY, INTRO_KEY, readRaw, writeRaw } from './storage';
 import { applyCustomCss, safeMode } from './theme';
 import type { PartKey } from './types';
-import { closeConfirm, confirmDelete, hideIntroTip, hideModal, showIntroTip, showToast } from './ui';
+import { handleScriptMessage, postToScript, scriptForSource } from './scripts';
+import { closeConfirm, confirmDelete, hideIntroTip, hideModal, showIntroTip, showSupportNotice, showToast } from './ui';
 import {
     arrangeDrag,
     arrangePointerMove,
@@ -524,6 +525,15 @@ function start() {
         if (!message || typeof message !== 'object') {
             return;
         }
+        const run = scriptForSource(e.source);
+        if (run) {
+            if (message.source === 'tab-sandbox' && message.type === 'sandbox-ready') {
+                postToScript(run, { type: 'load', html: run.html });
+            } else if (message.source === 'tab-script') {
+                handleScriptMessage(run, message);
+            }
+            return;
+        }
         const target = widgetForSource(e.source);
         const item = target ? findWidget(target.id) : null;
         if (!target || !item) {
@@ -626,6 +636,10 @@ function start() {
     });
 
     setTimeout(() => document.body.classList.remove('intro'), 600);
+
+    if (BUILD_TARGET === 'web') {
+        setTimeout(showSupportNotice, 800);
+    }
 
     byId('introTipBtn').addEventListener('click', hideIntroTip);
     byId('showIntroBtn').addEventListener('click', () => {

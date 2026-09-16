@@ -1,4 +1,9 @@
 import {
+    commandCode,
+    commandCodeGroup,
+    commandGrants,
+    commandHint,
+    commandHosts,
     commandList,
     commandModalTitle,
     commandName,
@@ -11,12 +16,16 @@ import {
     searchInput,
     settingsZone
 } from './dom';
+import { openPanel } from './panel';
+import { CAPABILITIES, availableCapabilities, isCapability, requestGrantPermissions, runScript } from './scripts';
 import { SUGGESTION_MAX, hideSuggestions } from './search';
 import { COMMANDS_KEY, readStorage, writeStorage } from './storage';
-import { openPanel } from './panel';
-import type { Command, SearchCommand } from './types';
+import type { Capability, Command, SearchCommand } from './types';
 import { CROSS_ICON, PENCIL_ICON, showToast } from './ui';
-import { isWebUrl } from './urls';
+import { isHostName, isWebUrl, parseHosts } from './urls';
+
+export const COMMAND_HINT_MAX = 80;
+export const COMMAND_CODE_MAX = 20000;
 
 export let commands: Command[] = [];
 let editingCommand = -1;
@@ -27,9 +36,9 @@ export function setCommands(next: Command[]) {
 
 export function defaultCommands(): Command[] {
     return [
-        { name: 'gh', type: 'search', url: 'https://github.com/search?q=%s' },
-        { name: 'yt', type: 'search', url: 'https://www.youtube.com/results?search_query=%s' },
-        { name: 'wiki', type: 'search', url: 'https://en.wikipedia.org/w/index.php?search=%s' }
+        { name: 'gh', hint: '', type: 'search', url: 'https://github.com/search?q=%s' },
+        { name: 'yt', hint: '', type: 'search', url: 'https://www.youtube.com/results?search_query=%s' },
+        { name: 'wiki', hint: '', type: 'search', url: 'https://en.wikipedia.org/w/index.php?search=%s' }
     ];
 }
 
@@ -44,22 +53,78 @@ export function sanitizeCommands(list: unknown): Command[] | null {
     const seen = new Set<string>();
     const result: Command[] = [];
     list.forEach((entry: unknown) => {
-        const command = entry as { name?: unknown; type?: unknown; url?: unknown; urls?: unknown } | null;
+        const command = entry as Record<string, unknown> | null;
         if (!command || !isCommandName(command.name) || seen.has(command.name.toLowerCase())) {
             return;
         }
         seen.add(command.name.toLowerCase());
+        const base = {
+            name: command.name,
+            hint: typeof command.hint === 'string' ? command.hint.trim().slice(0, COMMAND_HINT_MAX) : ''
+        };
         if (command.type === 'open') {
             if (Array.isArray(command.urls) && command.urls.length > 0 && command.urls.every(isWebUrl)) {
-                result.push({ name: command.name, type: 'open', urls: command.urls.map(String) });
+                result.push({ ...base, type: 'open', urls: command.urls.map(String) });
+            }
+            return;
+        }
+        if (command.type === 'script') {
+            if (typeof command.code === 'string' && command.code.trim()) {
+                const hosts = Array.isArray(command.hosts) ? command.hosts.join(',') : '';
+                const grants = Array.isArray(command.grants) ? command.grants.filter(isCapability) : [];
+                result.push({
+                    ...base,
+                    type: 'script',
+                    code: command.code.slice(0, COMMAND_CODE_MAX),
+                    hosts: parseHosts(hosts).filter(isHostName),
+                    grants: [...new Set(grants)]
+                });
             }
             return;
         }
         if (command.type === 'search' && isWebUrl(command.url) && String(command.url).includes('%s')) {
-            result.push({ name: command.name, type: 'search', url: String(command.url) });
+            result.push({ ...base, type: 'search', url: String(command.url) });
         }
     });
     return result;
+}
+
+export function hasScriptCommands(list: Command[] | null | undefined): boolean {
+    return Boolean(list && list.some(command => command.type === 'script'));
+}
+
+export function describeGrants(list: Command[] | null | undefined): string {
+    const granted = new Set<Capability>();
+    (list || []).forEach(command => {
+        if (command.type === 'script') {
+            command.grants.forEach(grant => granted.add(grant));
+        }
+    });
+    const labels = [...granted].map(grant => CAPABILITIES[grant].label.toLowerCase());
+    return labels.length ? ` They may also use: ${labels.join(', ')}.` : '';
+}
+
+export function renderCommandGrants(grants: Capability[]) {
+    commandGrants.innerHTML = '';
+    availableCapabilities().forEach(key => {
+        const info = CAPABILITIES[key];
+        const label = document.createElement('label');
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        box.dataset.grant = key;
+        box.checked = grants.includes(key);
+        const detail = document.createElement('span');
+        detail.textContent = info.detail;
+        label.append(box, ` ${info.label} `, detail);
+        commandGrants.appendChild(label);
+    });
+}
+
+export function readCommandGrants(): Capability[] {
+    return [...commandGrants.querySelectorAll<HTMLInputElement>('input[data-grant]')]
+        .filter(box => box.checked)
+        .map(box => box.dataset.grant)
+        .filter(isCapability);
 }
 
 export function loadCommands() {
@@ -93,8 +158,14 @@ export function matchingCommands(typed: string): Command[] {
 }
 
 export function describeCommand(command: Command): string {
+    if (command.hint) {
+        return command.hint;
+    }
     if (command.type === 'open') {
         return `Opens ${command.urls.length} ${command.urls.length === 1 ? 'link' : 'links'}`;
+    }
+    if (command.type === 'script') {
+        return 'Runs a script';
     }
     try {
         return `Search ${new URL(command.url).hostname.replace(/^www\./, '')}`;
@@ -116,6 +187,11 @@ export function commandTarget(command: SearchCommand, args: string): string | nu
 
 export function runCommand(command: Command, args: string) {
     hideSuggestions();
+    if (command.type === 'script') {
+        searchInput.value = '';
+        runScript(command, args);
+        return;
+    }
     if (command.type === 'open') {
         let blocked = 0;
         command.urls.forEach(url => {
@@ -170,7 +246,12 @@ export function renderCommandList() {
         const detail = document.createElement('span');
         detail.className = 'command-detail';
         detail.textContent = describeCommand(command);
-        detail.title = command.type === 'open' ? command.urls.join('\n') : command.url;
+        detail.title =
+            command.type === 'open'
+                ? command.urls.join('\n')
+                : command.type === 'script'
+                  ? 'Script command.' + describeGrants([command])
+                  : command.url;
 
         const edit = document.createElement('button');
         edit.type = 'button';
@@ -194,9 +275,10 @@ export function renderCommandList() {
 }
 
 export function syncCommandForm() {
-    const search = commandType.value === 'search';
-    commandUrlsGroup.hidden = search;
-    commandTemplateGroup.hidden = !search;
+    const type = commandType.value;
+    commandUrlsGroup.hidden = type !== 'open';
+    commandTemplateGroup.hidden = type !== 'search';
+    commandCodeGroup.hidden = type !== 'script';
 }
 
 export function openCommandModal(index?: number) {
@@ -204,9 +286,13 @@ export function openCommandModal(index?: number) {
     const command = editingCommand >= 0 ? commands[editingCommand] : null;
     commandModalTitle.textContent = command ? 'Edit Command' : 'Add Command';
     commandName.value = command ? command.name : '';
+    commandHint.value = command ? command.hint : '';
     commandType.value = command ? command.type : 'open';
     commandUrls.value = command && command.type === 'open' ? command.urls.join('\n') : '';
     commandTemplate.value = command && command.type === 'search' ? command.url : '';
+    commandCode.value = command && command.type === 'script' ? command.code : '';
+    commandHosts.value = command && command.type === 'script' ? command.hosts.join(', ') : '';
+    renderCommandGrants(command && command.type === 'script' ? command.grants : []);
     syncCommandForm();
     settingsZone.classList.remove('open');
     commandOverlay.classList.add('active');
@@ -219,7 +305,7 @@ export function closeCommandModal() {
     openPanel();
 }
 
-export function saveCommandForm() {
+export async function saveCommandForm() {
     const name = commandName.value.trim().replace(/^\//, '');
     if (!isCommandName(name)) {
         commandName.focus();
@@ -231,6 +317,7 @@ export function saveCommandForm() {
         return;
     }
 
+    const hint = commandHint.value.trim().slice(0, COMMAND_HINT_MAX);
     let command: Command;
     if (commandType.value === 'search') {
         const url = commandTemplate.value.trim();
@@ -238,7 +325,23 @@ export function saveCommandForm() {
             commandTemplate.focus();
             return;
         }
-        command = { name, type: 'search', url };
+        command = { name, hint, type: 'search', url };
+    } else if (commandType.value === 'script') {
+        const code = commandCode.value;
+        if (!code.trim() || code.length > COMMAND_CODE_MAX) {
+            commandCode.focus();
+            return;
+        }
+        const hosts = parseHosts(commandHosts.value);
+        if (!hosts.every(isHostName)) {
+            commandHosts.focus();
+            return;
+        }
+        const grants = readCommandGrants();
+        command = { name, hint, type: 'script', code, hosts, grants };
+        if (!(await requestGrantPermissions(grants))) {
+            showToast('The browser did not grant the extra permissions - those calls will fail until you allow them.');
+        }
     } else {
         const urls = commandUrls.value
             .split('\n')
@@ -249,7 +352,7 @@ export function saveCommandForm() {
             commandUrls.focus();
             return;
         }
-        command = { name, type: 'open', urls };
+        command = { name, hint, type: 'open', urls };
     }
 
     if (editingCommand >= 0) {

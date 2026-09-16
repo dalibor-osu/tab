@@ -1,4 +1,14 @@
-import { confirmDeleteBtn, confirmOverlay, confirmText, confirmTitle, introTip, settingsZone, toast } from './dom';
+import {
+    confirmDeleteBtn,
+    confirmOverlay,
+    confirmText,
+    confirmTitle,
+    introTip,
+    settingsZone,
+    supportNotice,
+    supportNoticeClose,
+    toast
+} from './dom';
 import { openPanel } from './panel';
 import { INTRO_KEY, writeRaw } from './storage';
 
@@ -78,6 +88,15 @@ export function showToast(message: string) {
     toastTimer = setTimeout(() => {
         toast.hidden = true;
     }, 6000);
+}
+
+export function showSupportNotice() {
+    supportNotice.hidden = false;
+    const hide = () => {
+        supportNotice.hidden = true;
+    };
+    supportNoticeClose.addEventListener('click', hide, { once: true });
+    setTimeout(hide, 9000);
 }
 
 export function showIntroTip() {

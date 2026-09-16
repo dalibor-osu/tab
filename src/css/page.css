@@ -68,6 +68,10 @@ body {
     overflow-x: hidden;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 .bg {
     --bg-blur-now: max(var(--bg-blur), 28px);
     position: fixed;
@@ -471,7 +475,7 @@ body {
     font-size: 0.85rem;
     text-align: center;
     z-index: 950;
-    animation: fadeInUp 0.3s ease;
+    animation: toastIn 0.3s ease;
 }
 
 .command-list {
@@ -482,6 +486,56 @@ body {
 
 .command-list + .settings-btn-row {
     margin-top: 12px;
+}
+
+.support-notice {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 950;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: min(640px, calc(100vw - 40px));
+    padding: 12px 14px 12px 18px;
+    background: var(--bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    animation: noticeIn 0.3s ease;
+}
+
+.support-notice a {
+    flex: none;
+    color: var(--accent-light);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.support-notice a:hover {
+    text-decoration: underline;
+}
+
+.support-notice button {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--card-border);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.support-notice button:hover {
+    color: var(--text-primary);
+    border-color: var(--accent);
 }
 
 .command-row {
@@ -734,10 +788,8 @@ body.arranging .widget::after {
     border-color: transparent;
 }
 
-.modal-wide {
+.modal.modal-wide {
     max-width: 560px;
-    max-height: 92vh;
-    overflow-y: auto;
 }
 
 .form-textarea.code {
@@ -1020,6 +1072,8 @@ body.arranging .widget::after {
     padding: 30px;
     width: 90%;
     max-width: 400px;
+    max-height: 92vh;
+    overflow-y: auto;
     box-shadow: 0 20px 60px var(--shadow-color);
 }
 
@@ -1543,6 +1597,30 @@ html.corner-visible .corner-btn {
     }
 }
 
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes noticeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -1572,6 +1650,7 @@ html.reduced-motion .intro .shortcut-item,
 html.reduced-motion .intro .add-shortcut-btn,
 html.reduced-motion .search-suggestions,
 html.reduced-motion .context-menu,
+html.reduced-motion .support-notice,
 html.reduced-motion .toast,
 html.reduced-motion .intro-tip {
     animation: none;

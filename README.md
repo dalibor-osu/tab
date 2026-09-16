@@ -13,6 +13,7 @@ Example:
 ## Features
 
 - Search box that supports any search engine you like
+- Slash commands: search templates, link bundles and sandboxed scripts
 - Shortcuts for your favourite and often accessed websites
 - Search history
 - Background image support
