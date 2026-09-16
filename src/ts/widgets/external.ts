@@ -150,6 +150,7 @@ export function postToWidget(frame: HTMLIFrameElement | null, message: Message) 
 }
 
 export function loadWidgetFrame(frame: HTMLIFrameElement, item: WidgetItem) {
+    frame.classList.remove('ready');
     const html = wrapWidgetDocument(item);
     const api = extensionApi();
     if (!api) {
@@ -260,6 +261,7 @@ export async function handleWidgetMessage(target: WidgetTarget, item: WidgetItem
     const reply = (result: unknown, error?: string) =>
         postToWidget(target.frame, { type: 'reply', id: message.id, result, error });
     if (message.type === 'ready') {
+        target.frame.classList.add('ready');
         postToWidget(target.frame, {
             type: 'init',
             theme: widgetTheme(),

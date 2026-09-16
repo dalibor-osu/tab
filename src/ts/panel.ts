@@ -5,19 +5,24 @@ import {
     customEngineRow,
     customFontRow,
     customTitleFontRow,
+    engineSelect,
+    fontSelect,
     footerEl,
     imageHint,
     logoEl,
     presetsEl,
     searchInput,
+    settingsZone,
     shortcutsTitleEl,
     subtitleEl,
     titleAngleRow,
     titleColor2Row,
-    titleColorRow
+    titleColorRow,
+    titleFontSelect
 } from './dom';
-import { clearStoredFiles } from './presets';
-import { getEngine } from './search';
+import { renderCommandList } from './commands';
+import { clearStoredFiles, renderPresetList } from './presets';
+import { ENGINES, getEngine } from './search';
 import { DEFAULT_SETTINGS, LOOK_KEYS, customCss, saveSettings, setCustomCss, setSettings, settings } from './settings';
 import {
     COMMANDS_KEY,
@@ -31,9 +36,12 @@ import {
     WIDGETS_KEY,
     removeRaw
 } from './storage';
-import { applyCustomCss, applyFont, applyThemeVars } from './theme';
+import { FONTS, applyCustomCss, applyFont, applyThemeVars } from './theme';
 import type { SettingKey } from './types';
 import { broadcastWidgetTheme } from './widgets/external';
+import { renderWidgetList, syncGridControls } from './widgets/render';
+
+let panelReady = false;
 
 type ControlElement = HTMLInputElement | HTMLSelectElement;
 
@@ -199,7 +207,40 @@ export function writeControl(el: ControlElement, value: unknown) {
     }
 }
 
+export function preparePanel() {
+    if (panelReady) {
+        return;
+    }
+    panelReady = true;
+    buildSelect(fontSelect, FONTS);
+    buildSelect(titleFontSelect, [{ id: 'inherit', label: 'Same as text' }, ...FONTS]);
+    buildSelect(engineSelect, ENGINES);
+    buildPresets();
+    bindControls();
+    syncControls();
+    renderCommandList();
+    renderPresetList();
+    renderWidgetList();
+    syncGridControls();
+}
+
+export function openPanel() {
+    preparePanel();
+    settingsZone.classList.add('open');
+}
+
+export function togglePanel() {
+    if (settingsZone.classList.contains('open')) {
+        settingsZone.classList.remove('open');
+    } else {
+        openPanel();
+    }
+}
+
 export function syncControls() {
+    if (!panelReady) {
+        return;
+    }
     document.querySelectorAll<ControlElement>('[data-setting]').forEach(el => {
         const key = el.dataset.setting as SettingKey;
         writeControl(el, settings[key]);

@@ -26,7 +26,7 @@ export function mountWidget(item: WidgetItem): HTMLElement {
     el.dataset.id = item.id;
     const frame = document.createElement('iframe');
     frame.setAttribute('sandbox', 'allow-scripts allow-forms');
-    frame.title = describeWidget(item);
+    frame.title = item.type === 'external' ? 'External widget' : WIDGET_TYPES[item.type].label;
     frame.referrerPolicy = 'no-referrer';
     el.appendChild(frame);
     widgetResizeObserver.observe(el);

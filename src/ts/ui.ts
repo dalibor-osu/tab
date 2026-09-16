@@ -1,4 +1,5 @@
 import { confirmDeleteBtn, confirmOverlay, confirmText, confirmTitle, introTip, settingsZone, toast } from './dom';
+import { openPanel } from './panel';
 import { INTRO_KEY, writeRaw } from './storage';
 
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
@@ -21,7 +22,7 @@ export function closeConfirm() {
     confirmOverlay.classList.remove('active');
     if (confirmReopensPanel) {
         confirmReopensPanel = false;
-        settingsZone.classList.add('open');
+        openPanel();
     }
 }
 
@@ -50,7 +51,7 @@ export function showModal(overlay: HTMLElement) {
 
 export function hideModal(overlay: HTMLElement) {
     overlay.classList.remove('active');
-    settingsZone.classList.add('open');
+    openPanel();
 }
 
 export function countOf(total: number, singular: string, plural: string): string {

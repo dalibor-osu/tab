@@ -1,5 +1,6 @@
 import { arrangeDoneBtn, settingsZone, widgetLayer } from '../dom';
 import type { Rect, WidgetItem } from '../types';
+import { openPanel } from '../panel';
 import { clampInt, showToast } from '../ui';
 import { GRID_LIMITS, clampWidgetsToGrid, findWidget, rectFree, saveWidgets, widgetsState } from './model';
 import { mountedWidgets, placeWidget, renderWidgetList, renderWidgets, syncGridControls } from './render';
@@ -97,7 +98,7 @@ export function stopArranging() {
     document.body.classList.remove('arranging');
     arrangeDoneBtn.hidden = true;
     clearGridCells();
-    settingsZone.classList.add('open');
+    openPanel();
 }
 
 export function gridMetrics(): { pitchX: number; pitchY: number } {

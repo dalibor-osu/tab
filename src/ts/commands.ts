@@ -13,6 +13,7 @@ import {
 } from './dom';
 import { SUGGESTION_MAX, hideSuggestions } from './search';
 import { COMMANDS_KEY, readStorage, writeStorage } from './storage';
+import { openPanel } from './panel';
 import type { Command, SearchCommand } from './types';
 import { CROSS_ICON, PENCIL_ICON, showToast } from './ui';
 import { isWebUrl } from './urls';
@@ -215,7 +216,7 @@ export function openCommandModal(index?: number) {
 export function closeCommandModal() {
     editingCommand = -1;
     commandOverlay.classList.remove('active');
-    settingsZone.classList.add('open');
+    openPanel();
 }
 
 export function saveCommandForm() {

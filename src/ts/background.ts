@@ -15,9 +15,10 @@ export const IMAGE_KEEP_BYTES = 1.5 * 1024 * 1024;
 export const IMAGE_MAX_SIDE = 2560;
 export const IMAGE_QUALITY = 0.88;
 export const IMAGE_KEEP_TYPES = ['image/gif', 'image/svg+xml'];
-export const THUMB_SIDE = 480;
+export const THUMB_SIDE = 200;
 
 let backgroundToken = 0;
+let backgroundResolved = false;
 export let backgroundImage = '';
 export let backgroundBlob: Blob | null = null;
 export let backgroundObjectUrl = '';
@@ -28,6 +29,9 @@ export async function applyBackground() {
     const source = backgroundImage || webUrl(settings.bgUrl);
     const token = ++backgroundToken;
     if (!source) {
+        if (!backgroundResolved) {
+            return;
+        }
         bgFull.classList.remove('ready');
         setVar('--bg-image-full', 'none');
         setVar('--bg-image', 'none');
@@ -52,15 +56,20 @@ export async function applyBackground() {
     refreshThumbnail(img, source);
 }
 
-export function refreshThumbnail(img: HTMLImageElement, source: string) {
+export async function refreshThumbnail(img: HTMLImageElement, source: string) {
     if (source !== backgroundImage || !img.naturalWidth) {
         return;
     }
     const thumb = readRaw(THUMB_KEY);
-    if (!thumb || thumb.length >= 8000) {
+    if (!thumb) {
         return;
     }
+    const expected = Math.min(THUMB_SIDE, Math.max(img.naturalWidth, img.naturalHeight));
     try {
+        const current = await loadImageElement(thumb);
+        if (Math.max(current.naturalWidth, current.naturalHeight) === expected) {
+            return;
+        }
         writeRaw(THUMB_KEY, drawScaled(img, THUMB_SIDE).toDataURL('image/jpeg', 0.6));
     } catch {}
 }
@@ -128,6 +137,7 @@ export async function prepareImage(file: Blob): Promise<PreparedImage> {
 }
 
 export function setBackgroundSource(stored: Blob | string) {
+    backgroundResolved = true;
     if (backgroundObjectUrl) {
         URL.revokeObjectURL(backgroundObjectUrl);
         backgroundObjectUrl = '';

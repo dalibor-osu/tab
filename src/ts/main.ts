@@ -15,7 +15,6 @@ import {
     findCommand,
     loadCommands,
     openCommandModal,
-    renderCommandList,
     saveCommandForm,
     syncCommandForm,
     useCommandSuggestion
@@ -51,12 +50,10 @@ import {
     contextEditBtn,
     contextMenu,
     cssEditor,
-    engineSelect,
     exportCancelBtn,
     exportConfirmBtn,
     exportOverlay,
     extensionGroup,
-    fontSelect,
     gridCols,
     gridRows,
     historyImportInput,
@@ -82,7 +79,6 @@ import {
     settingsBtn,
     settingsClose,
     settingsZone,
-    titleFontSelect,
     widgetCancelBtn,
     widgetCode,
     widgetFetchBtn,
@@ -97,17 +93,9 @@ import {
     widgetType
 } from './dom';
 import { extensionApi } from './extension';
-import { applySettings, bindControls, buildPresets, buildSelect, resetAll, resetLook, syncControls } from './panel';
+import { applySettings, buildSelect, resetAll, resetLook, syncControls, togglePanel } from './panel';
+import { closePresetModal, loadPresetList, openPresetModal, presetLoadParts, savePresetForm } from './presets';
 import {
-    closePresetModal,
-    loadPresetList,
-    openPresetModal,
-    presetLoadParts,
-    renderPresetList,
-    savePresetForm
-} from './presets';
-import {
-    ENGINES,
     activeSuggestion,
     clearHistory,
     hideSuggestions,
@@ -129,7 +117,7 @@ import {
     saveNewShortcut
 } from './shortcuts';
 import { CUSTOM_CSS_KEY, INTRO_KEY, readRaw, writeRaw } from './storage';
-import { FONTS, applyCustomCss, safeMode } from './theme';
+import { applyCustomCss, safeMode } from './theme';
 import type { PartKey } from './types';
 import { closeConfirm, confirmDelete, hideIntroTip, hideModal, showIntroTip, showToast } from './ui';
 import {
@@ -162,12 +150,24 @@ import {
     widgetForSource
 } from './widgets/external';
 import { WIDGET_TYPES, findWidget, loadWidgets } from './widgets/model';
-import { renderWidgetList, renderWidgets, syncGridControls } from './widgets/render';
+import { renderWidgets } from './widgets/render';
 
 type Timer = ReturnType<typeof setTimeout> | undefined;
 
 function byId(id: string): HTMLElement {
     return document.getElementById(id) as HTMLElement;
+}
+
+function afterFirstPaint(task: () => void) {
+    let done = false;
+    const run = () => {
+        if (!done) {
+            done = true;
+            task();
+        }
+    };
+    requestAnimationFrame(() => requestAnimationFrame(run));
+    setTimeout(run, 150);
 }
 
 function start() {
@@ -332,9 +332,7 @@ function start() {
         }
     });
 
-    settingsBtn.addEventListener('click', () => {
-        settingsZone.classList.toggle('open');
-    });
+    settingsBtn.addEventListener('click', togglePanel);
 
     settingsClose.addEventListener('click', () => {
         settingsZone.classList.remove('open');
@@ -610,24 +608,16 @@ function start() {
         }
     });
 
-    buildSelect(fontSelect, FONTS);
-    buildSelect(titleFontSelect, [{ id: 'inherit', label: 'Same as text' }, ...FONTS]);
-    buildSelect(engineSelect, ENGINES);
-    buildPresets();
-
     applySettings();
-    bindControls();
     loadIconCache();
     loadShortcuts();
     loadHistory();
     loadCommands();
-    renderCommandList();
     loadPresetList();
-    renderPresetList();
     loadWidgets();
-    renderWidgets();
-    renderWidgetList();
-    syncGridControls();
+    searchInput.focus();
+
+    afterFirstPaint(renderWidgets);
 
     imagePromise.then(stored => {
         setBackgroundSource(stored);
@@ -635,10 +625,7 @@ function start() {
         syncControls();
     });
 
-    syncControls();
-
-    setTimeout(() => searchInput.focus(), 300);
-    setTimeout(() => document.body.classList.remove('intro'), 1000);
+    setTimeout(() => document.body.classList.remove('intro'), 600);
 
     byId('introTipBtn').addEventListener('click', hideIntroTip);
     byId('showIntroBtn').addEventListener('click', () => {
