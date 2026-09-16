@@ -64,7 +64,7 @@ export function changeGrid(axis: 'cols' | 'rows', value: unknown) {
     widgetsState.grid[axis] = clampInt(value, min, max, widgetsState.grid[axis]);
     clampWidgetsToGrid();
     if (widgetsState.items.some(item => !rectFree(item, item.id))) {
-        showToast('Not enough room for every widget — some overlap now. Enlarge the grid or shrink them.');
+        showToast('Not enough room for every widget - some overlap now. Enlarge the grid or shrink them.');
     }
     saveWidgets();
     renderWidgets();

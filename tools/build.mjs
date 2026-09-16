@@ -109,7 +109,7 @@ async function buildExtension() {
     await writeFile(join(OUT_DIR, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
     await cp(join(EXT_DIR, 'icons'), join(OUT_DIR, 'icons'), { recursive: true });
 
-    console.log(`\nextension ${manifest.version} written to ${OUT_LABEL} — load it unpacked from that folder`);
+    console.log(`\nextension ${manifest.version} written to ${OUT_LABEL} - load it unpacked from that folder`);
 }
 
 await rm(OUT_DIR, { recursive: true, force: true });

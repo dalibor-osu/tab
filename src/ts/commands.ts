@@ -128,7 +128,7 @@ export function runCommand(command: Command, args: string) {
         searchInput.value = '';
         if (blocked) {
             showToast(
-                `${blocked} of ${command.urls.length} tabs were blocked — allow pop-ups for this site to open them all at once.`
+                `${blocked} of ${command.urls.length} tabs were blocked - allow pop-ups for this site to open them all at once.`
             );
         }
         return;
