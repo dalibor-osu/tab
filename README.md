@@ -4,11 +4,11 @@ This project contains a simple, highly customizable website aimed to be used as 
 
 You can try it [here](https://dalibor.codes/tab/). You can use it in two ways:
 
-- **Website** – point your browser at it with a simple new tab redirect extension like [this one](https://github.com/jimschubert/newtab-redirect).
+- **Website** – point your browser at it with a simple new tab redirect extension like [this one](https://github.com/jimschubert/newtab-redirect). (Some features are only available for extension)
 - **Chromium extension** – the same page packaged as a New Tab override that loads from disk (see below).
 
 Example:
-<img width="1918" height="907" alt="image" src="https://github.com/user-attachments/assets/91becddf-7d0c-40f2-a1c4-482178c132f7" />
+<img width="1919" height="909" alt="image" src="https://github.com/user-attachments/assets/a7fb2375-9581-4d6c-907e-e7654f01ce92" />
 
 ## Features
 
@@ -17,9 +17,9 @@ Example:
 - Search history
 - Background image support
 - Customization of colors, fonts, font sizes, background and data
-- Widgets on a full-screen grid you size yourself: clock (digital or analog), date, sticky notes, to-do lists, and external widgets written by anyone – those run in a sandbox with no access to the page, your data or the network unless you allow specific hosts
-- Presets – save your whole setup and switch between them, loading only the parts you want (styling, content, shortcuts, commands)
-- Export only the parts you choose (share your styling without your shortcuts or commands) and import shared files either directly or as a new preset
+- Widgets
+- Presets
+- Export/Import of configs
 - Config reset
 - Custom CSS (missing reference for now)
 
@@ -32,7 +32,7 @@ Example:
     - Background image
     - and everything else
 - No cookies, ads or trackers
-- Totally self-hostable, just serve the website
+- Totally self-hostable, just serve the website (or use an extension)
 
 ## Building
 
