@@ -37,6 +37,8 @@ export const DEFAULT_SETTINGS = {
     cardBlur: 10,
     radius: 15,
     hideScrollbars: false,
+    reduceMotion: false,
+    cornerVisible: false,
     bgUrl: '',
     bgFit: 'cover',
     autoTheme: true,
@@ -114,7 +116,9 @@ export const LOOK_KEYS: SettingKey[] = [
     'panelAlpha',
     'cardBlur',
     'radius',
-    'hideScrollbars'
+    'hideScrollbars',
+    'reduceMotion',
+    'cornerVisible'
 ];
 
 export const BACKGROUND_KEYS: SettingKey[] = ['bgUrl', 'bgFit', 'autoTheme', 'dim', 'blur', 'scale', 'x', 'y'];

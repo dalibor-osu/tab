@@ -5,7 +5,6 @@ import type {
     ManifestField,
     ManifestOption,
     Rect,
-    TodoItem,
     WidgetItem,
     WidgetManifest,
     WidgetSettings,
@@ -14,35 +13,26 @@ import type {
 } from '../types';
 import { clampInt, newId } from '../ui';
 import { isHostName, isSourceUrl, parseHosts } from '../urls';
+import { BUILTIN_WIDGETS } from './builtin';
 
 interface WidgetTypeInfo {
     label: string;
     size: [number, number];
-    defaults: () => Partial<WidgetSettings>;
 }
 
 export const GRID_LIMITS: Record<'cols' | 'rows', [number, number]> = { cols: [2, 24], rows: [2, 16] };
-export const WIDGET_TEXT_MAX = 20000;
 export const WIDGET_CODE_MAX = 200000;
 export const WIDGET_DATA_MAX = 65536;
 export const WIDGET_FETCH_MAX = 1024 * 1024;
-export const CONFIG_TYPES: ConfigType[] = ['select', 'text', 'number', 'toggle', 'color'];
+export const CONFIG_TYPES: ConfigType[] = ['select', 'text', 'number', 'range', 'toggle', 'color'];
 export const CONFIG_TEXT_MAX = 500;
 
 export const WIDGET_TYPES: Record<WidgetType, WidgetTypeInfo> = {
-    clock: {
-        label: 'Clock',
-        size: [3, 2],
-        defaults: () => ({ style: 'digital', seconds: false, hour12: false })
-    },
-    date: { label: 'Date', size: [3, 1], defaults: () => ({ format: 'full' }) },
-    notes: { label: 'Notes', size: [3, 3], defaults: () => ({ color: '#fde68a', text: '' }) },
-    todo: { label: 'To-do', size: [3, 4], defaults: () => ({ title: 'To-do', items: [] }) },
-    external: {
-        label: 'External (runs code)',
-        size: [4, 3],
-        defaults: () => ({ html: '', hosts: [], data: null, source: '' })
-    }
+    clock: { label: 'Clock', size: [3, 2] },
+    date: { label: 'Date', size: [3, 1] },
+    notes: { label: 'Notes', size: [3, 3] },
+    todo: { label: 'To-do', size: [3, 4] },
+    external: { label: 'External (runs code)', size: [4, 3] }
 };
 
 export let widgetsState: WidgetsState = defaultWidgets();
@@ -55,61 +45,54 @@ export function isWidgetType(value: unknown): value is WidgetType {
     return typeof value === 'string' && value in WIDGET_TYPES;
 }
 
+export function defaultWidgetSettings(): WidgetSettings {
+    return { html: '', hosts: [], data: null, config: {}, source: '' };
+}
+
+export function widgetHtml(item: Pick<WidgetItem, 'type' | 'settings'>): string {
+    return item.type === 'external' ? item.settings.html : BUILTIN_WIDGETS[item.type];
+}
+
+export function sanitizeWidgetData(value: unknown): unknown {
+    try {
+        const json = JSON.stringify(value);
+        if (json && json.length <= WIDGET_DATA_MAX) {
+            return JSON.parse(json);
+        }
+    } catch {}
+    return null;
+}
+
+function legacyWidgetData(type: WidgetType, source: Record<string, unknown>): unknown {
+    if (type === 'notes' && typeof source.text === 'string') {
+        return { text: source.text };
+    }
+    if (type === 'todo' && Array.isArray(source.items)) {
+        return { items: source.items };
+    }
+    return null;
+}
+
 export function sanitizeWidgetSettings(type: WidgetType, raw: unknown): WidgetSettings {
-    const base = WIDGET_TYPES[type].defaults() as Record<string, unknown>;
     const source = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
     const text = (key: string, max: number): string => {
         const value = source[key];
-        return typeof value === 'string' ? value.slice(0, max) : String(base[key] ?? '');
+        return typeof value === 'string' ? value.slice(0, max) : '';
     };
-    const flag = (key: string): boolean =>
-        typeof source[key] === 'boolean' ? Boolean(source[key]) : Boolean(base[key]);
-    const pick = <T extends string>(key: string, allowed: readonly T[]): T =>
-        allowed.includes(source[key] as T) ? (source[key] as T) : (base[key] as T);
-    if (type === 'clock') {
-        return {
-            style: pick('style', ['digital', 'analog'] as const),
-            seconds: flag('seconds'),
-            hour12: flag('hour12')
-        } as WidgetSettings;
-    }
-    if (type === 'date') {
-        return { format: pick('format', ['full', 'long', 'short', 'numeric'] as const) } as WidgetSettings;
-    }
-    if (type === 'notes') {
-        const color = source.color;
-        return {
-            color: typeof color === 'string' && /^#[0-9a-f]{6}$/i.test(color) ? color : String(base.color),
-            text: text('text', WIDGET_TEXT_MAX)
-        } as WidgetSettings;
-    }
-    if (type === 'todo') {
-        const items = Array.isArray(source.items) ? (source.items as unknown[]) : [];
-        const tasks: TodoItem[] = [];
-        items.slice(0, 200).forEach(entry => {
-            const item = entry as { text?: unknown; done?: unknown } | null;
-            if (item && typeof item.text === 'string') {
-                tasks.push({ text: item.text.slice(0, 500), done: Boolean(item.done) });
-            }
-        });
-        return { title: text('title', 60), items: tasks } as WidgetSettings;
-    }
-    let data: unknown = null;
-    try {
-        const json = JSON.stringify(source.data);
-        if (json && json.length <= WIDGET_DATA_MAX) {
-            data = JSON.parse(json);
-        }
-    } catch {}
-    const html = text('html', WIDGET_CODE_MAX);
+    const external = type === 'external';
+    const html = external ? text('html', WIDGET_CODE_MAX) : '';
     const origin = text('source', 2000).trim();
+    const configSource = source.config && typeof source.config === 'object' ? source.config : source;
     return {
         html,
-        hosts: parseHosts(Array.isArray(source.hosts) ? source.hosts.join(',') : '').filter(isHostName),
-        data,
-        config: sanitizeWidgetConfig(widgetManifest(html), source.config),
-        source: isSourceUrl(origin) ? origin : ''
-    } as WidgetSettings;
+        hosts: external ? parseHosts(Array.isArray(source.hosts) ? source.hosts.join(',') : '').filter(isHostName) : [],
+        data: sanitizeWidgetData(source.data === undefined ? legacyWidgetData(type, source) : source.data),
+        config: sanitizeWidgetConfig(
+            widgetManifest(widgetHtml({ type, settings: { ...defaultWidgetSettings(), html } })),
+            configSource
+        ),
+        source: external && isSourceUrl(origin) ? origin : ''
+    };
 }
 
 const manifestCache = new Map<string, WidgetManifest | null>();
@@ -188,11 +171,15 @@ export function sanitizeManifest(raw: unknown): WidgetManifest | null {
                 return;
             }
         }
-        if (field.type === 'number') {
+        if (field.type === 'number' || field.type === 'range') {
             field.min = typeof entry.min === 'number' && Number.isFinite(entry.min) ? entry.min : null;
             field.max = typeof entry.max === 'number' && Number.isFinite(entry.max) ? entry.max : null;
             field.step =
                 typeof entry.step === 'number' && Number.isFinite(entry.step) && entry.step > 0 ? entry.step : null;
+        }
+        if (field.type === 'range') {
+            field.min = field.min ?? 0;
+            field.max = field.max ?? 100;
         }
         if (field.type === 'text') {
             field.placeholder = manifestText(entry.placeholder, 60);
@@ -217,7 +204,7 @@ export function fieldFallback(field: ManifestField): ConfigValue {
     if (field.type === 'color') {
         return '#888888';
     }
-    if (field.type === 'number') {
+    if (field.type === 'number' || field.type === 'range') {
         return field.min != null ? field.min : 0;
     }
     return '';
@@ -236,7 +223,7 @@ export function coerceConfigValue(field: ManifestField, value: unknown, fallback
     if (field.type === 'color') {
         return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
     }
-    if (field.type === 'number') {
+    if (field.type === 'number' || field.type === 'range') {
         if (typeof value === 'string' && !value.trim()) {
             return fallback;
         }

@@ -94,6 +94,8 @@ export function applyEarlyBackground(current: Settings) {
 
 export function applyThemeVars(current: Settings) {
     document.documentElement.classList.toggle('no-scrollbars', current.hideScrollbars);
+    document.documentElement.classList.toggle('reduced-motion', current.reduceMotion);
+    document.documentElement.classList.toggle('corner-visible', current.cornerVisible);
     setVar('--accent', current.accent);
     setVar('--accent-light', shade(current.accent, 0.3));
     setVar('--accent-dark', shade(current.accent, -0.2));

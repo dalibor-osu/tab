@@ -24,6 +24,18 @@ const htmlOptions = {
     minifyCSS: true
 };
 
+const widgetHtmlOptions = { ...htmlOptions, minifyJS: true };
+
+const widgetTextPlugin = {
+    name: 'widget-html-as-text',
+    setup(build) {
+        build.onLoad({ filter: /\.html$/ }, async args => ({
+            contents: await minifyHtml(await readFile(args.path, 'utf8'), widgetHtmlOptions),
+            loader: 'text'
+        }));
+    }
+};
+
 function report(name, before, after) {
     const percent = Math.round((1 - after / before) * 100);
     console.log(
@@ -39,7 +51,8 @@ async function bundle(entry, outdir, hashed) {
         format: 'iife',
         minify: true,
         naming: hashed ? '[name].[hash].[ext]' : '[name].[ext]',
-        define: { BUILD_TARGET: JSON.stringify(TARGET) }
+        define: { BUILD_TARGET: JSON.stringify(TARGET) },
+        plugins: [widgetTextPlugin]
     });
     if (!result.success) {
         result.logs.forEach(log => console.error(String(log)));

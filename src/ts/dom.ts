@@ -51,11 +51,6 @@ export let gridRowsValue: HTMLSpanElement;
 export let widgetOverlay: HTMLDivElement;
 export let widgetModalTitle: HTMLHeadingElement;
 export let widgetType: HTMLSelectElement;
-export let widgetClockStyle: HTMLSelectElement;
-export let widgetClockSeconds: HTMLInputElement;
-export let widgetDateFormat: HTMLSelectElement;
-export let widgetNoteColor: HTMLInputElement;
-export let widgetTodoTitle: HTMLInputElement;
 export let widgetCode: HTMLTextAreaElement;
 export let widgetHosts: HTMLInputElement;
 export let widgetHostsHint: HTMLDivElement;
@@ -121,11 +116,9 @@ export let clearCssBtn: HTMLButtonElement;
 export let safeModeNote: HTMLDivElement;
 export let extensionGroup: HTMLDivElement;
 
-export let widgetClockHour12: HTMLInputElement;
 export let titleColor2Row: HTMLDivElement;
 
 export function initDom() {
-    widgetClockHour12 = byId<HTMLInputElement>('widgetClockHour12');
     titleColor2Row = byId<HTMLDivElement>('titleColor2Row');
     searchForm = byId<HTMLFormElement>('searchForm');
     searchInput = byId<HTMLInputElement>('searchInput');
@@ -176,11 +169,6 @@ export function initDom() {
     widgetOverlay = byId<HTMLDivElement>('widgetOverlay');
     widgetModalTitle = byId<HTMLHeadingElement>('widgetModalTitle');
     widgetType = byId<HTMLSelectElement>('widgetType');
-    widgetClockStyle = byId<HTMLSelectElement>('widgetClockStyle');
-    widgetClockSeconds = byId<HTMLInputElement>('widgetClockSeconds');
-    widgetDateFormat = byId<HTMLSelectElement>('widgetDateFormat');
-    widgetNoteColor = byId<HTMLInputElement>('widgetNoteColor');
-    widgetTodoTitle = byId<HTMLInputElement>('widgetTodoTitle');
     widgetCode = byId<HTMLTextAreaElement>('widgetCode');
     widgetHosts = byId<HTMLInputElement>('widgetHosts');
     widgetHostsHint = byId<HTMLDivElement>('widgetHostsHint');

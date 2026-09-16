@@ -1,0 +1,237 @@
+<script type="application/json" id="tab-widget">
+    {
+        "name": "To-do",
+        "settings": [{ "key": "title", "label": "Title", "type": "text", "default": "To-do", "placeholder": "To-do" }]
+    }
+</script>
+
+<style>
+    body {
+        margin: 0;
+        height: 100%;
+        padding: 3vmin 4vmin;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4em;
+        font-family: var(--font-stack);
+        font-size: max(12px, 3.6vmin);
+        color: var(--text-primary);
+        overflow: hidden;
+    }
+
+    .title {
+        font-weight: 600;
+        font-size: 1.1em;
+    }
+
+    .list {
+        flex: 1;
+        min-height: 0;
+        margin: 0;
+        padding: 0;
+        overflow-y: auto;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2em;
+    }
+
+    .item {
+        display: flex;
+        align-items: center;
+        gap: 0.3em;
+        padding: 0.15em 0.3em;
+        border-radius: 6px;
+    }
+
+    .main {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        cursor: pointer;
+    }
+
+    .main input {
+        flex: none;
+        width: 1em;
+        height: 1em;
+        margin: 0;
+        accent-color: var(--accent);
+    }
+
+    .main span {
+        flex: 1;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .item.done .main span {
+        text-decoration: line-through;
+        color: var(--text-secondary);
+    }
+
+    .item button {
+        flex: none;
+        width: 1.5em;
+        height: 1.5em;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+        opacity: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .item:hover button,
+    .item button:focus-visible {
+        opacity: 1;
+    }
+
+    .item button svg {
+        width: 0.6em;
+        height: 0.6em;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+    }
+
+    .empty,
+    .status {
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .status:empty {
+        display: none;
+    }
+
+    .add input {
+        width: 100%;
+        padding: 0.35em 0.7em;
+        border: 1px solid var(--card-border);
+        border-radius: 999px;
+        background: var(--panel-bg);
+        color: var(--text-primary);
+        font: inherit;
+        font-size: 0.95em;
+        outline: none;
+    }
+
+    .add input:focus {
+        border-color: var(--accent);
+    }
+</style>
+
+<div class="title" id="title"></div>
+<ul class="list" id="list"></ul>
+<div class="status" id="status"></div>
+<form class="add" id="add">
+    <input type="text" id="input" placeholder="Add a task…" maxlength="500" autocomplete="off" />
+</form>
+
+<script>
+    (() => {
+        const MAX_ITEMS = 200;
+        const CROSS = '<svg viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8"/></svg>';
+        const title = document.getElementById('title');
+        const list = document.getElementById('list');
+        const status = document.getElementById('status');
+        const form = document.getElementById('add');
+        const input = document.getElementById('input');
+        let items = [];
+
+        const el = (tag, className, text) => {
+            const node = document.createElement(tag);
+            if (className) {
+                node.className = className;
+            }
+            if (text !== undefined) {
+                node.textContent = text;
+            }
+            return node;
+        };
+
+        function readItems(data) {
+            const raw = data && typeof data === 'object' && Array.isArray(data.items) ? data.items : [];
+            return raw
+                .filter(entry => entry && typeof entry.text === 'string')
+                .slice(0, MAX_ITEMS)
+                .map(entry => ({ text: entry.text.slice(0, 500), done: Boolean(entry.done) }));
+        }
+
+        function save() {
+            status.textContent = '';
+            tab.storage.set({ items }).catch(problem => {
+                status.textContent = problem.message;
+            });
+        }
+
+        function renderList() {
+            list.innerHTML = '';
+            if (!items.length) {
+                list.append(el('li', 'empty', 'Nothing to do.'));
+                return;
+            }
+            items.forEach((task, index) => {
+                const row = el('li', 'item' + (task.done ? ' done' : ''));
+                const main = el('label', 'main');
+                const check = el('input');
+                check.type = 'checkbox';
+                check.checked = task.done;
+                check.addEventListener('change', () => {
+                    task.done = check.checked;
+                    save();
+                    renderList();
+                });
+                main.append(check, el('span', '', task.text));
+                const remove = el('button');
+                remove.type = 'button';
+                remove.title = 'Remove task';
+                remove.innerHTML = CROSS;
+                remove.addEventListener('click', () => {
+                    items.splice(index, 1);
+                    save();
+                    renderList();
+                });
+                row.append(main, remove);
+                list.append(row);
+            });
+        }
+
+        function apply(config) {
+            const text = config && typeof config.title === 'string' ? config.title.trim() : '';
+            title.textContent = text;
+            title.hidden = !text;
+        }
+
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+            const text = input.value.trim();
+            if (!text) {
+                return;
+            }
+            if (items.length >= MAX_ITEMS) {
+                status.textContent = 'A to-do list holds at most ' + MAX_ITEMS + ' tasks.';
+                return;
+            }
+            items.push({ text, done: false });
+            input.value = '';
+            save();
+            renderList();
+        });
+
+        tab.on('init', context => {
+            apply(context.config);
+            items = readItems(context.data);
+            renderList();
+        });
+
+        tab.on('config', apply);
+    })();
+</script>

@@ -1,23 +1,17 @@
 import {
     widgetCard,
-    widgetClockHour12,
-    widgetClockSeconds,
-    widgetClockStyle,
     widgetCode,
     widgetConfigFields,
     widgetConfigGroup,
-    widgetDateFormat,
     widgetError,
     widgetFetchBtn,
     widgetH,
     widgetHosts,
     widgetHostsHint,
     widgetModalTitle,
-    widgetNoteColor,
     widgetOverlay,
     widgetSaveBtn,
     widgetSource,
-    widgetTodoTitle,
     widgetType,
     widgetW,
     widgetX,
@@ -27,12 +21,14 @@ import { buildSelect } from '../panel';
 import type { ConfigValue, WidgetManifest, WidgetSettings, WidgetType } from '../types';
 import { clampInt, hideModal, newId, showModal } from '../ui';
 import { isHostName, isSourceUrl, parseHosts } from '../urls';
+import { BUILTIN_WIDGETS } from './builtin';
 import { syncGrantRow } from './external';
 import {
     CONFIG_TEXT_MAX,
     WIDGET_CODE_MAX,
     WIDGET_TYPES,
     coerceConfigValue,
+    defaultWidgetSettings,
     findFreeSlot,
     fitsGrid,
     isWidgetType,
@@ -52,19 +48,22 @@ export function widgetFieldsFor(type: WidgetType) {
     });
 }
 
-export function fillWidgetForm(type: WidgetType, values: Partial<WidgetSettings>) {
+export function formWidgetType(): WidgetType {
+    return isWidgetType(widgetType.value) ? widgetType.value : 'external';
+}
+
+export function formWidgetHtml(type: WidgetType): string {
+    return type === 'external' ? widgetCode.value : BUILTIN_WIDGETS[type];
+}
+
+export function fillWidgetForm(type: WidgetType, values: WidgetSettings) {
     widgetType.value = type;
     widgetFieldsFor(type);
-    widgetClockStyle.value = type === 'clock' ? (values.style ?? 'digital') : 'digital';
-    widgetClockSeconds.checked = type === 'clock' ? Boolean(values.seconds) : false;
-    widgetClockHour12.checked = type === 'clock' ? Boolean(values.hour12) : false;
-    widgetDateFormat.value = type === 'date' ? (values.format ?? 'full') : 'full';
-    widgetNoteColor.value = type === 'notes' ? (values.color ?? '#fde68a') : '#fde68a';
-    widgetTodoTitle.value = type === 'todo' ? (values.title ?? '') : '';
-    widgetCode.value = type === 'external' ? (values.html ?? '') : '';
-    widgetHosts.value = type === 'external' ? (values.hosts ?? []).join(', ') : '';
-    widgetSource.value = type === 'external' ? (values.source ?? '') : '';
-    syncWidgetManifest(type === 'external' ? values.config : {});
+    const external = type === 'external';
+    widgetCode.value = external ? values.html : '';
+    widgetHosts.value = external ? values.hosts.join(', ') : '';
+    widgetSource.value = external ? values.source : '';
+    syncWidgetManifest(values.config);
 }
 
 export function showWidgetNotice(message: string) {
@@ -166,6 +165,31 @@ export function renderWidgetConfigFields(manifest: WidgetManifest | null, values
             label.append(checkbox, ` ${field.label}`);
             group.appendChild(label);
             control = checkbox;
+        } else if (field.type === 'range') {
+            group.className = 'form-group';
+            const label = document.createElement('label');
+            label.className = 'settings-label';
+            const text = document.createElement('span');
+            text.textContent = field.label;
+            const shown = document.createElement('span');
+            shown.className = 'settings-value';
+            shown.textContent = String(value);
+            label.append(text, shown);
+            const input = document.createElement('input');
+            input.type = 'range';
+            input.min = String(field.min ?? 0);
+            input.max = String(field.max ?? 100);
+            if (field.step != null) {
+                input.step = String(field.step);
+            }
+            input.value = String(value);
+            input.addEventListener('input', () => {
+                shown.textContent = input.value;
+            });
+            control = input;
+            control.id = `widgetConfig-${field.key}`;
+            label.htmlFor = control.id;
+            group.append(label, input);
         } else {
             group.className = 'form-group';
             const label = document.createElement('label');
@@ -230,9 +254,10 @@ export function readWidgetConfig(): Record<string, ConfigValue> {
 }
 
 export function syncWidgetManifest(values?: Record<string, unknown>) {
-    const manifest = widgetManifest(widgetCode.value);
+    const type = formWidgetType();
+    const manifest = widgetManifest(formWidgetHtml(type));
     renderWidgetConfigFields(manifest, values || readWidgetConfig());
-    if (manifest && manifest.hosts.length && !widgetHosts.value.trim()) {
+    if (type === 'external' && manifest && manifest.hosts.length && !widgetHosts.value.trim()) {
         widgetHosts.value = manifest.hosts.join(', ');
     }
     syncGrantRow();
@@ -257,7 +282,7 @@ export function openWidgetModal(index?: number) {
     widgetModalTitle.textContent = item ? 'Edit Widget' : 'Add Widget';
     widgetSaveBtn.textContent = item ? 'Save changes' : 'Add';
     widgetType.disabled = Boolean(item);
-    fillWidgetForm(type, item ? item.settings : WIDGET_TYPES[type].defaults());
+    fillWidgetForm(type, item ? item.settings : defaultWidgetSettings());
     const [w, h] = item ? [item.w, item.h] : WIDGET_TYPES[type].size;
     const slot = item ? { x: item.x, y: item.y } : findFreeSlot(w, h) || { x: 0, y: 0 };
     setGeometryFields(w, h, slot.x, slot.y);
@@ -276,36 +301,20 @@ export function changeWidgetType() {
     if (!isWidgetType(type)) {
         return;
     }
-    fillWidgetForm(type, WIDGET_TYPES[type].defaults());
+    fillWidgetForm(type, defaultWidgetSettings());
     const [w, h] = WIDGET_TYPES[type].size;
     const slot = findFreeSlot(w, h) || { x: 0, y: 0 };
     setGeometryFields(w, h, slot.x, slot.y);
 }
 
-export function readWidgetForm(type: WidgetType, existing: WidgetSettings | null): Partial<WidgetSettings> {
-    const base = existing || WIDGET_TYPES[type].defaults();
-    if (type === 'clock') {
-        return {
-            style: widgetClockStyle.value as WidgetSettings['style'],
-            seconds: widgetClockSeconds.checked,
-            hour12: widgetClockHour12.checked
-        };
-    }
-    if (type === 'date') {
-        return { format: widgetDateFormat.value as WidgetSettings['format'] };
-    }
-    if (type === 'notes') {
-        return { color: widgetNoteColor.value, text: base.text ?? '' };
-    }
-    if (type === 'todo') {
-        return { title: widgetTodoTitle.value.trim() || 'To-do', items: base.items ?? [] };
-    }
+export function readWidgetForm(type: WidgetType, existing: WidgetSettings | null): WidgetSettings {
+    const external = type === 'external';
     return {
-        html: widgetCode.value,
-        hosts: parseHosts(widgetHosts.value),
-        data: base.data ?? null,
+        html: external ? widgetCode.value : '',
+        hosts: external ? parseHosts(widgetHosts.value) : [],
+        data: existing ? existing.data : null,
         config: readWidgetConfig(),
-        source: widgetSource.value.trim()
+        source: external ? widgetSource.value.trim() : ''
     };
 }
 
@@ -317,11 +326,11 @@ export function saveWidgetForm() {
     }
     const values = readWidgetForm(type, existing ? existing.settings : null);
     if (type === 'external') {
-        if (!(values.html ?? '').trim()) {
+        if (!values.html.trim()) {
             showWidgetError('Paste the widget code first.');
             return;
         }
-        const invalid = (values.hosts ?? []).filter(host => !isHostName(host));
+        const invalid = values.hosts.filter(host => !isHostName(host));
         if (invalid.length) {
             showWidgetError(`"${invalid[0]}" is not a valid host name.`);
             return;

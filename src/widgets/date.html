@@ -1,0 +1,107 @@
+<script type="application/json" id="tab-widget">
+    {
+        "name": "Date",
+        "settings": [
+            {
+                "key": "format",
+                "label": "Format",
+                "type": "select",
+                "default": "full",
+                "options": [
+                    { "value": "full", "label": "Weekday and full date" },
+                    { "value": "long", "label": "Full date" },
+                    { "value": "short", "label": "Short" },
+                    { "value": "numeric", "label": "Numeric" }
+                ]
+            }
+        ]
+    }
+</script>
+
+<style>
+    body {
+        margin: 0;
+        height: 100%;
+        padding: 4vmin;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.2em;
+        text-align: center;
+        line-height: 1.1;
+        font-family: var(--font-stack);
+        color: var(--text-primary);
+        overflow: hidden;
+    }
+
+    .primary {
+        font-weight: 600;
+        font-size: min(38vh, 9vw);
+    }
+
+    .secondary {
+        color: var(--text-secondary);
+        font-size: min(24vh, 6vw);
+    }
+
+    body.single .primary {
+        font-size: min(45vh, 7vw);
+    }
+</style>
+
+<div class="primary" id="primary"></div>
+<div class="secondary" id="secondary"></div>
+
+<script>
+    (() => {
+        const primary = document.getElementById('primary');
+        const secondary = document.getElementById('secondary');
+        let config = { format: 'full' };
+        let shownDay = '';
+
+        function lines(now) {
+            if (config.format === 'full') {
+                return [
+                    now.toLocaleDateString(undefined, { weekday: 'long' }),
+                    now.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
+                ];
+            }
+            if (config.format === 'long') {
+                return [now.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }), ''];
+            }
+            if (config.format === 'short') {
+                return [now.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }), ''];
+            }
+            return [now.toLocaleDateString(), ''];
+        }
+
+        function render() {
+            const now = new Date();
+            const [first, second] = lines(now);
+            primary.textContent = first;
+            secondary.textContent = second;
+            secondary.hidden = !second;
+            document.body.classList.toggle('single', !second);
+            shownDay = now.toDateString();
+        }
+
+        function apply(next) {
+            config = { ...config, ...(next || {}) };
+            render();
+        }
+
+        tab.on('init', context => apply(context.config));
+        tab.on('config', apply);
+        setInterval(() => {
+            if (new Date().toDateString() !== shownDay) {
+                render();
+            }
+        }, 30 * 1000);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && new Date().toDateString() !== shownDay) {
+                render();
+            }
+        });
+    })();
+</script>

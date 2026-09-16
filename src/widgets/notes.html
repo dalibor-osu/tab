@@ -1,0 +1,67 @@
+<script type="application/json" id="tab-widget">
+    {
+        "name": "Notes",
+        "settings": [{ "key": "color", "label": "Note colour", "type": "color", "default": "#fde68a" }]
+    }
+</script>
+
+<style>
+    :root {
+        --note-color: #fde68a;
+    }
+
+    body {
+        margin: 0;
+        height: 100%;
+        display: flex;
+        background: var(--note-color);
+        color: #1f2937;
+        box-shadow: inset 0 3vmin 0 rgba(0, 0, 0, 0.06);
+        font-family: var(--font-stack);
+        overflow: hidden;
+    }
+
+    textarea {
+        flex: 1;
+        width: 100%;
+        padding: 5vmin 5vmin 4vmin;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        font-size: max(13px, 5vmin);
+        line-height: 1.35;
+        resize: none;
+        outline: none;
+    }
+
+    textarea::placeholder {
+        color: rgba(31, 41, 55, 0.5);
+    }
+</style>
+
+<textarea id="text" placeholder="Write something…" spellcheck="false" maxlength="20000"></textarea>
+
+<script>
+    (() => {
+        const area = document.getElementById('text');
+        let timer;
+
+        function apply(config) {
+            document.documentElement.style.setProperty('--note-color', (config && config.color) || '#fde68a');
+        }
+
+        tab.on('init', context => {
+            apply(context.config);
+            const data = context.data;
+            area.value = data && typeof data === 'object' && typeof data.text === 'string' ? data.text : '';
+        });
+
+        tab.on('config', apply);
+
+        area.addEventListener('input', () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => tab.storage.set({ text: area.value }).catch(() => {}), 250);
+        });
+    })();
+</script>

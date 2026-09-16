@@ -46,23 +46,10 @@ export interface Rect {
 }
 
 export type WidgetType = 'clock' | 'date' | 'notes' | 'todo' | 'external';
-export type ConfigType = 'select' | 'text' | 'number' | 'toggle' | 'color';
+export type ConfigType = 'select' | 'text' | 'number' | 'range' | 'toggle' | 'color';
 export type ConfigValue = string | number | boolean;
 
-export interface TodoItem {
-    text: string;
-    done: boolean;
-}
-
 export interface WidgetSettings {
-    style: 'digital' | 'analog';
-    seconds: boolean;
-    hour12: boolean;
-    format: 'full' | 'long' | 'short' | 'numeric';
-    color: string;
-    text: string;
-    title: string;
-    items: TodoItem[];
     html: string;
     hosts: string[];
     data: unknown;

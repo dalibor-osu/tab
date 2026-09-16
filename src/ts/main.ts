@@ -154,7 +154,7 @@ import {
     syncWidgetManifest
 } from './widgets/editor';
 import {
-    externalDocs,
+    widgetDocs,
     grantDirectAccess,
     handleWidgetMessage,
     postToWidget,
@@ -162,7 +162,7 @@ import {
     widgetForSource
 } from './widgets/external';
 import { WIDGET_TYPES, findWidget, loadWidgets } from './widgets/model';
-import { renderWidgetList, renderWidgets, syncGridControls, widgetTick, widgetTickerRunning } from './widgets/render';
+import { renderWidgetList, renderWidgets, syncGridControls } from './widgets/render';
 
 type Timer = ReturnType<typeof setTimeout> | undefined;
 
@@ -532,15 +532,9 @@ function start() {
             return;
         }
         if (message.source === 'tab-sandbox' && message.type === 'sandbox-ready') {
-            postToWidget(target.frame, { type: 'load', html: externalDocs.get(item.id) || '' });
+            postToWidget(target.frame, { type: 'load', html: widgetDocs.get(item.id) || '' });
         } else if (message.source === 'tab-widget') {
             handleWidgetMessage(target, item, message);
-        }
-    });
-
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden && widgetTickerRunning()) {
-            widgetTick();
         }
     });
 

@@ -1,0 +1,224 @@
+<script type="application/json" id="tab-widget">
+    {
+        "name": "Clock",
+        "settings": [
+            {
+                "key": "style",
+                "label": "Style",
+                "type": "select",
+                "default": "digital",
+                "options": [
+                    { "value": "digital", "label": "Digital" },
+                    { "value": "analog", "label": "Analog" }
+                ]
+            },
+            { "key": "seconds", "label": "Show seconds", "type": "toggle", "default": false },
+            { "key": "hour12", "label": "12-hour clock", "type": "toggle", "default": false },
+            { "key": "size", "label": "Size", "type": "range", "min": 40, "max": 100, "step": 5, "default": 100 }
+        ]
+    }
+</script>
+
+<style>
+    :root {
+        --size: 1;
+    }
+
+    body {
+        margin: 0;
+        height: 100%;
+        padding: 4vmin;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-stack);
+        color: var(--text-primary);
+        overflow: hidden;
+    }
+
+    #app {
+        width: calc(100% * var(--size));
+        height: calc(100% * var(--size));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .digital {
+        --fit: min(48vh, 26vw);
+        display: flex;
+        align-items: baseline;
+        gap: 0.18em;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        line-height: 1;
+        font-size: calc(var(--fit) * var(--size));
+    }
+
+    .digital.with-seconds {
+        --fit: min(48vh, 18vw);
+    }
+
+    .digital.with-suffix {
+        --fit: min(48vh, 19vw);
+    }
+
+    .digital.with-seconds.with-suffix {
+        --fit: min(48vh, 15vw);
+    }
+
+    .seconds {
+        font-size: 0.45em;
+        color: var(--text-secondary);
+    }
+
+    .suffix {
+        font-size: 0.35em;
+        color: var(--text-secondary);
+    }
+
+    svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    .face {
+        fill: none;
+        stroke: var(--card-border);
+        stroke-width: 1.5;
+    }
+
+    .tick {
+        stroke: currentColor;
+        stroke-width: 1;
+        stroke-linecap: round;
+        opacity: 0.5;
+    }
+
+    .tick.major {
+        stroke-width: 2.5;
+        opacity: 1;
+    }
+
+    .hand {
+        stroke: currentColor;
+        stroke-linecap: round;
+    }
+
+    .hand.hour {
+        stroke-width: 4;
+    }
+
+    .hand.minute {
+        stroke-width: 3;
+    }
+
+    .hand.second {
+        stroke: var(--accent);
+        stroke-width: 1.5;
+    }
+
+    .pin {
+        fill: var(--accent);
+    }
+</style>
+
+<div id="app"></div>
+
+<script>
+    (() => {
+        const app = document.getElementById('app');
+        let config = { style: 'digital', seconds: false, hour12: false, size: 100 };
+        let mounted = '';
+        let timer;
+
+        const pad = value => String(value).padStart(2, '0');
+        const find = selector => app.querySelector(selector);
+
+        function analogMarkup() {
+            const ticks = Array.from({ length: 60 }, (_, i) => {
+                const major = i % 5 === 0;
+                const angle = (i * 6 * Math.PI) / 180;
+                const point = r => [50 + r * Math.sin(angle), 50 - r * Math.cos(angle)].map(v => v.toFixed(2));
+                const [x1, y1] = point(major ? 40 : 43.5);
+                const [x2, y2] = point(46.5);
+                return `<line class="tick${major ? ' major' : ''}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" />`;
+            }).join('');
+            return (
+                '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+                '<circle class="face" cx="50" cy="50" r="48.5" />' +
+                ticks +
+                '<line class="hand hour" x1="50" y1="54" x2="50" y2="27" />' +
+                '<line class="hand minute" x1="50" y1="55" x2="50" y2="16" />' +
+                '<line class="hand second" x1="50" y1="60" x2="50" y2="13" />' +
+                '<circle class="pin" cx="50" cy="50" r="2.2" /></svg>'
+            );
+        }
+
+        function mount() {
+            if (mounted === config.style) {
+                return;
+            }
+            mounted = config.style;
+            app.innerHTML =
+                config.style === 'analog'
+                    ? analogMarkup()
+                    : '<div class="digital"><span class="time"></span><span class="seconds"></span><span class="suffix"></span></div>';
+        }
+
+        function tick() {
+            const now = new Date();
+            if (config.style === 'analog') {
+                const second = now.getSeconds();
+                const minute = now.getMinutes() + second / 60;
+                const hour = (now.getHours() % 12) + minute / 60;
+                find('.hand.hour').setAttribute('transform', `rotate(${hour * 30} 50 50)`);
+                find('.hand.minute').setAttribute('transform', `rotate(${minute * 6} 50 50)`);
+                const secondHand = find('.hand.second');
+                secondHand.style.display = config.seconds ? '' : 'none';
+                secondHand.setAttribute('transform', `rotate(${second * 6} 50 50)`);
+                return;
+            }
+            let hours = now.getHours();
+            let suffix = '';
+            if (config.hour12) {
+                suffix = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12;
+            }
+            const digital = find('.digital');
+            digital.classList.toggle('with-seconds', config.seconds);
+            digital.classList.toggle('with-suffix', config.hour12);
+            find('.time').textContent = `${config.hour12 ? hours : pad(hours)}:${pad(now.getMinutes())}`;
+            find('.seconds').textContent = config.seconds ? pad(now.getSeconds()) : '';
+            find('.suffix').textContent = suffix;
+        }
+
+        function schedule() {
+            clearTimeout(timer);
+            timer = setTimeout(
+                () => {
+                    tick();
+                    schedule();
+                },
+                1000 - (Date.now() % 1000) + 5
+            );
+        }
+
+        function apply(next) {
+            config = { ...config, ...(next || {}) };
+            document.documentElement.style.setProperty('--size', String((Number(config.size) || 100) / 100));
+            mount();
+            tick();
+            schedule();
+        }
+
+        tab.on('init', context => apply(context.config));
+        tab.on('config', apply);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                tick();
+            }
+        });
+    })();
+</script>

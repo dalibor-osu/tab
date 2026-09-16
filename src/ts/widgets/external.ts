@@ -5,7 +5,7 @@ import type { WidgetItem } from '../types';
 import { showToast } from '../ui';
 import { isHostName, isWebUrl, parseHosts } from '../urls';
 import { showWidgetError } from './editor';
-import { WIDGET_DATA_MAX, WIDGET_FETCH_MAX, saveWidgets } from './model';
+import { WIDGET_DATA_MAX, WIDGET_FETCH_MAX, saveWidgets, widgetHtml } from './model';
 import { mountedWidgets } from './render';
 
 export interface WidgetTarget {
@@ -40,7 +40,7 @@ export const THEME_VARS = [
     '--font-stack'
 ];
 
-export const externalDocs = new Map<string, string>();
+export const widgetDocs = new Map<string, string>();
 
 export function widgetSize(el: HTMLElement): { width: number; height: number } {
     return { width: el.clientWidth, height: el.clientHeight };
@@ -138,7 +138,7 @@ export function wrapWidgetDocument(item: WidgetItem): string {
         '<scr' +
         `ipt>(${widgetBridge.toString()})();</scr` +
         'ipt></head><body>' +
-        item.settings.html +
+        widgetHtml(item) +
         '</body></html>'
     );
 }
@@ -149,21 +149,21 @@ export function postToWidget(frame: HTMLIFrameElement | null, message: Message) 
     }
 }
 
-export function loadExternalWidget(frame: HTMLIFrameElement, item: WidgetItem) {
+export function loadWidgetFrame(frame: HTMLIFrameElement, item: WidgetItem) {
     const html = wrapWidgetDocument(item);
     const api = extensionApi();
     if (!api) {
-        externalDocs.delete(item.id);
+        widgetDocs.delete(item.id);
         frame.srcdoc = html;
         return;
     }
-    externalDocs.set(item.id, html);
+    widgetDocs.set(item.id, html);
     frame.src = api.runtime.getURL('sandbox.html') + '?w=' + encodeURIComponent(item.id) + '&t=' + Date.now();
 }
 
 export function widgetForSource(source: MessageEventSource | null): WidgetTarget | null {
     for (const [id, el] of mountedWidgets) {
-        const frame = el.dataset.type === 'external' ? el.querySelector('iframe') : null;
+        const frame = el.querySelector('iframe');
         if (frame && frame.contentWindow === source) {
             return { id, el, frame };
         }
@@ -290,12 +290,12 @@ export async function handleWidgetMessage(target: WidgetTarget, item: WidgetItem
 }
 
 export function broadcastWidgetTheme() {
-    let theme: WidgetTheme | null = null;
+    if (!mountedWidgets.size) {
+        return;
+    }
+    const theme = widgetTheme();
     mountedWidgets.forEach(el => {
-        if (el.dataset.type === 'external') {
-            theme = theme || widgetTheme();
-            postToWidget(el.querySelector('iframe'), { type: 'theme', theme });
-        }
+        postToWidget(el.querySelector('iframe'), { type: 'theme', theme });
     });
 }
 

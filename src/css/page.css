@@ -652,15 +652,6 @@ html.no-scrollbars *::-webkit-scrollbar {
     backdrop-filter: none;
 }
 
-.widget-body {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4cqmin;
-}
-
 body.arranging .widget-layer {
     pointer-events: auto;
 }
@@ -712,244 +703,16 @@ body.arranging .widget::after {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-.clock-digital {
-    display: flex;
-    align-items: baseline;
-    gap: 0.18em;
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-    line-height: 1;
-    font-size: min(48cqh, 26cqw);
-}
-
-.clock-digital.with-seconds {
-    font-size: min(48cqh, 18cqw);
-}
-
-.clock-digital.with-suffix {
-    font-size: min(48cqh, 19cqw);
-}
-
-.clock-digital.with-seconds.with-suffix {
-    font-size: min(48cqh, 15cqw);
-}
-
-.clock-seconds {
-    font-size: 0.45em;
-    color: var(--text-secondary);
-}
-
-.clock-suffix {
-    font-size: 0.35em;
-    color: var(--text-secondary);
-}
-
-.clock-analog {
+.widget iframe {
+    flex: 1;
     width: 100%;
     height: 100%;
-}
-
-.clock-analog .face {
-    fill: none;
-    stroke: var(--card-border);
-    stroke-width: 1.5;
-}
-
-.clock-analog .tick {
-    stroke: currentColor;
-    stroke-width: 1;
-    stroke-linecap: round;
-    opacity: 0.5;
-}
-
-.clock-analog .tick.major {
-    stroke-width: 2.5;
-    opacity: 1;
-}
-
-.clock-analog .hand {
-    stroke: currentColor;
-    stroke-linecap: round;
-}
-
-.clock-analog .hand.hour {
-    stroke-width: 4;
-}
-
-.clock-analog .hand.minute {
-    stroke-width: 3;
-}
-
-.clock-analog .hand.second {
-    stroke: var(--accent);
-    stroke-width: 1.5;
-}
-
-.clock-analog .pin {
-    fill: var(--accent);
-}
-
-.widget-date .widget-body {
-    flex-direction: column;
-    gap: 0.2em;
-    text-align: center;
-    line-height: 1.1;
-}
-
-.date-primary {
-    font-weight: 600;
-    font-size: min(38cqh, 9cqw);
-}
-
-.date-secondary {
-    color: var(--text-secondary);
-    font-size: min(24cqh, 6cqw);
-}
-
-.widget-date.single .date-primary {
-    font-size: min(45cqh, 7cqw);
+    border: 0;
+    background: transparent;
 }
 
 .widget-notes {
-    background: var(--note-color, #fde68a);
     border-color: transparent;
-    color: #1f2937;
-    box-shadow: inset 0 3cqmin 0 rgba(0, 0, 0, 0.06);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-}
-
-.notes-text {
-    flex: 1;
-    width: 100%;
-    padding: 5cqmin 5cqmin 4cqmin;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    font-size: max(13px, 5cqmin);
-    line-height: 1.35;
-    resize: none;
-    outline: none;
-}
-
-.notes-text::placeholder {
-    color: rgba(31, 41, 55, 0.5);
-}
-
-.widget-todo {
-    padding: 3cqmin 4cqmin;
-    gap: 0.4em;
-    font-size: max(12px, 3.6cqmin);
-}
-
-.todo-title {
-    font-weight: 600;
-    font-size: 1.1em;
-}
-
-.todo-list {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.2em;
-}
-
-.todo-item {
-    display: flex;
-    align-items: center;
-    gap: 0.3em;
-    padding: 0.15em 0.3em;
-    border-radius: 6px;
-}
-
-.todo-main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    cursor: pointer;
-}
-
-.todo-main input {
-    flex: none;
-    width: 1em;
-    height: 1em;
-    margin: 0;
-    accent-color: var(--accent);
-}
-
-.todo-main span {
-    flex: 1;
-    min-width: 0;
-    overflow-wrap: anywhere;
-}
-
-.todo-item.done .todo-main span {
-    text-decoration: line-through;
-    color: var(--text-secondary);
-}
-
-.todo-item button {
-    flex: none;
-    width: 1.5em;
-    height: 1.5em;
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    opacity: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.todo-item:hover button,
-.todo-item button:focus-visible {
-    opacity: 1;
-}
-
-.todo-item button svg {
-    width: 0.6em;
-    height: 0.6em;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-}
-
-.todo-empty {
-    color: var(--text-secondary);
-    font-size: 0.9em;
-}
-
-.todo-add input {
-    width: 100%;
-    padding: 0.35em 0.7em;
-    border: 1px solid var(--card-border);
-    border-radius: 999px;
-    background: var(--panel-bg);
-    color: var(--text-primary);
-    font: inherit;
-    font-size: 0.95em;
-    outline: none;
-}
-
-.todo-add input:focus {
-    border-color: var(--accent);
-}
-
-.widget-external iframe {
-    flex: 1;
-    width: 100%;
-    height: 100%;
-    border: 0;
-    background: transparent;
 }
 
 .modal-wide {
@@ -1401,7 +1164,8 @@ body.arranging .widget::after {
 }
 
 .settings-zone:hover .corner-btn,
-.settings-zone.open .corner-btn {
+.settings-zone.open .corner-btn,
+html.corner-visible .corner-btn {
     opacity: 1;
 }
 
@@ -1624,7 +1388,8 @@ body.arranging .widget::after {
     opacity: 0.8;
 }
 
-.settings-panel input[type='range'] {
+.settings-panel input[type='range'],
+.modal input[type='range'] {
     width: 100%;
     accent-color: var(--accent);
     cursor: pointer;
@@ -1782,6 +1547,23 @@ body.arranging .widget::after {
 
 .intro .header {
     animation-delay: 0.1s;
+}
+
+html.reduced-motion .intro .header,
+html.reduced-motion .intro .search-input,
+html.reduced-motion .intro .search-button,
+html.reduced-motion .intro .section-title,
+html.reduced-motion .intro .shortcut-item,
+html.reduced-motion .intro .add-shortcut-btn,
+html.reduced-motion .search-suggestions,
+html.reduced-motion .context-menu,
+html.reduced-motion .toast,
+html.reduced-motion .intro-tip {
+    animation: none;
+}
+
+html.reduced-motion .settings-panel {
+    transition: none;
 }
 
 .intro .search-input,

@@ -194,6 +194,18 @@
                                 <input type="checkbox" data-setting="hideScrollbars" />
                             </label>
                         </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Reduce animations</span>
+                                <input type="checkbox" data-setting="reduceMotion" />
+                            </label>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Keep corner buttons visible</span>
+                                <input type="checkbox" data-setting="cornerVisible" />
+                            </label>
+                        </div>
                     </div>
 
                     <div class="settings-group">
@@ -878,34 +890,6 @@
                     <label class="form-label" for="widgetType">Type</label>
                     <select class="form-select" id="widgetType"></select>
                 </div>
-                <div class="form-group" data-widget-fields="clock">
-                    <label class="form-label" for="widgetClockStyle">Style</label>
-                    <select class="form-select" id="widgetClockStyle">
-                        <option value="digital">Digital</option>
-                        <option value="analog">Analog</option>
-                    </select>
-                    <div class="modal-options compact">
-                        <label><input type="checkbox" id="widgetClockSeconds" /> Show seconds</label>
-                        <label><input type="checkbox" id="widgetClockHour12" /> 12-hour clock</label>
-                    </div>
-                </div>
-                <div class="form-group" data-widget-fields="date">
-                    <label class="form-label" for="widgetDateFormat">Format</label>
-                    <select class="form-select" id="widgetDateFormat">
-                        <option value="full">Weekday and full date</option>
-                        <option value="long">Full date</option>
-                        <option value="short">Short</option>
-                        <option value="numeric">Numeric</option>
-                    </select>
-                </div>
-                <div class="form-group" data-widget-fields="notes">
-                    <label class="form-label" for="widgetNoteColor">Note colour</label>
-                    <input type="color" class="form-input" id="widgetNoteColor" />
-                </div>
-                <div class="form-group" data-widget-fields="todo">
-                    <label class="form-label" for="widgetTodoTitle">Title</label>
-                    <input type="text" class="form-input" id="widgetTodoTitle" maxlength="60" placeholder="To-do" />
-                </div>
                 <div data-widget-fields="external">
                     <div class="form-group">
                         <label class="form-label" for="widgetSource">Load the code from</label>
@@ -952,10 +936,10 @@
                             <div class="settings-hint" id="widgetGrantHint"></div>
                         </div>
                     </div>
-                    <div class="form-group" id="widgetConfigGroup" hidden>
-                        <label class="form-label">Widget settings</label>
-                        <div id="widgetConfigFields"></div>
-                    </div>
+                </div>
+                <div class="form-group" id="widgetConfigGroup" hidden>
+                    <label class="form-label">Widget settings</label>
+                    <div id="widgetConfigFields"></div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Size and position (cells)</label>
