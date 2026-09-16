@@ -6,6 +6,7 @@ export const DB_STORE = 'files';
 export const CUSTOM_CSS_KEY = 'newTabCustomCss';
 export const STORAGE_KEY = 'newTabShortcuts';
 export const HISTORY_KEY = 'newTabSearchHistory';
+export const COMMAND_HISTORY_KEY = 'newTabCommandHistory';
 export const INTRO_KEY = 'newTabIntroSeen';
 export const COMMANDS_KEY = 'newTabCommands';
 export const PRESETS_KEY = 'newTabPresets';

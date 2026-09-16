@@ -4,6 +4,7 @@ import type { PartKey, Parts, SettingKey, Settings } from './types';
 export const DEFAULT_SETTINGS = {
     pageTitle: 'New Tab',
     greeting: 'Hello',
+    searchPlaceholder: '',
     subtitle: 'Where would you like to go?',
     showSubtitle: true,
     shortcutsTitle: 'Quick Access',

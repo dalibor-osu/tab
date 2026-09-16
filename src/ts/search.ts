@@ -1,8 +1,15 @@
-import { describeCommand, matchingCommands, parseCommand, runCommand, useCommandSuggestion } from './commands';
+import {
+    describeCommand,
+    findCommand,
+    matchingCommands,
+    parseCommand,
+    runCommand,
+    useCommandSuggestion
+} from './commands';
 import { searchForm, searchInput, searchSuggestions } from './dom';
 import { settings } from './settings';
 import { openInNewTab } from './shortcuts';
-import { HISTORY_KEY, readStorage, writeStorage } from './storage';
+import { COMMAND_HISTORY_KEY, HISTORY_KEY, readStorage, writeStorage } from './storage';
 import type { Engine } from './types';
 import { CROSS_ICON } from './ui';
 import { isWebUrl } from './urls';
@@ -28,10 +35,19 @@ export const ENGINES: Engine[] = [
 ];
 
 export let searchHistory: string[] = [];
+export let commandHistory: string[] = [];
 export let activeSuggestion = -1;
+
+type CycleMode = 'commands' | 'history';
+let cycleMode: CycleMode | null = null;
+let cycleIndex = -1;
 
 export function setSearchHistory(next: string[]) {
     searchHistory = next;
+}
+
+export function setCommandHistory(next: string[]) {
+    commandHistory = next;
 }
 
 export function getEngine(id: string): Engine {
@@ -49,15 +65,83 @@ export function searchUrlFor(query: string): string | null {
         : template + encodeURIComponent(query);
 }
 
-export function loadHistory() {
-    const stored = readStorage<unknown>(HISTORY_KEY, []);
-    searchHistory = Array.isArray(stored)
+function readList(key: string): string[] {
+    const stored = readStorage<unknown>(key, []);
+    return Array.isArray(stored)
         ? stored.filter((item): item is string => typeof item === 'string').slice(0, HISTORY_MAX)
         : [];
 }
 
+export function loadHistory() {
+    searchHistory = readList(HISTORY_KEY);
+    commandHistory = readList(COMMAND_HISTORY_KEY);
+}
+
 export function saveHistory() {
     writeStorage(HISTORY_KEY, searchHistory);
+}
+
+export function saveCommandHistory() {
+    writeStorage(COMMAND_HISTORY_KEY, commandHistory);
+}
+
+export function rememberCommand(text: string) {
+    if (!settings.rememberSearches) {
+        return;
+    }
+    const lower = text.toLowerCase();
+    commandHistory = [text, ...commandHistory.filter(item => item.toLowerCase() !== lower)].slice(0, HISTORY_MAX);
+    saveCommandHistory();
+}
+
+export function cycling(): boolean {
+    return cycleMode !== null;
+}
+
+export function resetCycle() {
+    cycleMode = null;
+    cycleIndex = -1;
+}
+
+function showCycled(list: string[]) {
+    const value = list[cycleIndex];
+    searchInput.value = value;
+    searchInput.setSelectionRange(value.length, value.length);
+    hideSuggestions();
+}
+
+export function cycleEntries(key: 'ArrowUp' | 'ArrowDown'): boolean {
+    if (!cycleMode) {
+        if (searchInput.value.trim() || !searchSuggestions.hidden) {
+            return false;
+        }
+        const mode: CycleMode = key === 'ArrowUp' ? 'commands' : 'history';
+        const list = mode === 'commands' ? commandHistory : searchHistory;
+        if (!list.length) {
+            return true;
+        }
+        cycleMode = mode;
+        cycleIndex = 0;
+        showCycled(list);
+        return true;
+    }
+    const list = cycleMode === 'commands' ? commandHistory : searchHistory;
+    const older = cycleMode === 'commands' ? key === 'ArrowUp' : key === 'ArrowDown';
+    if (older) {
+        if (cycleIndex + 1 < list.length) {
+            cycleIndex++;
+            showCycled(list);
+        }
+        return true;
+    }
+    if (cycleIndex === 0) {
+        searchInput.value = '';
+        resetCycle();
+        return true;
+    }
+    cycleIndex--;
+    showCycled(list);
+    return true;
 }
 
 export function rememberSearch(query: string) {
@@ -75,9 +159,36 @@ export function forgetSearch(query: string) {
     renderSuggestions(true);
 }
 
+export function forgetCommandUse(entry: string) {
+    commandHistory = commandHistory.filter(item => item !== entry);
+    saveCommandHistory();
+    renderSuggestions(false);
+}
+
+export function matchingCommandUses(typed: string): string[] {
+    const match = /^\/([a-z0-9_-]+)(?:\s+(.*))?$/i.exec(typed);
+    if (!match || !findCommand(match[1])) {
+        return [];
+    }
+    const prefix = '/' + match[1].toLowerCase() + ' ';
+    const args = (match[2] || '').trim().toLowerCase();
+    const current = typed.toLowerCase();
+    return commandHistory
+        .filter(entry => {
+            const lower = entry.toLowerCase();
+            return (
+                lower.startsWith(prefix) && lower !== current && (!args || lower.slice(prefix.length).includes(args))
+            );
+        })
+        .slice(0, SUGGESTION_MAX);
+}
+
 export function clearHistory() {
     searchHistory = [];
+    commandHistory = [];
     saveHistory();
+    saveCommandHistory();
+    resetCycle();
     hideSuggestions();
 }
 
@@ -135,50 +246,82 @@ export function renderCommandSuggestions(typed: string) {
     searchSuggestions.hidden = false;
 }
 
-export function renderSuggestions(showAll: boolean) {
-    const typed = searchInput.value.trim();
-    if (typed.startsWith('/') && !/\s/.test(typed)) {
-        renderCommandSuggestions(typed);
-        return;
-    }
+const GLOBE_ICON =
+    '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    '<path d="M14 8A6 6 0 1 1 2 8a6 6 0 0 1 12 0zM2 8h12M8 2c2 2 2 10 0 12M8 2C6 4 6 12 8 14" /></svg>';
+const CLOCK_ICON =
+    '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    '<path d="M8 4.5V8l2.5 1.5M14 8A6 6 0 1 1 2 8a6 6 0 0 1 12 0z" /></svg>';
+const COMMAND_ICON =
+    '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    '<path d="M4 3l5 5-5 5M9 13h4" /></svg>';
 
-    const matches = settings.rememberSearches && (typed || showAll) ? matchingHistory() : [];
+interface SuggestionSource {
+    icon(entry: string): string;
+    label(entry: string): string;
+    forgetTitle: string;
+    forget(entry: string): void;
+}
+
+const HISTORY_SOURCE: SuggestionSource = {
+    icon: entry => (classifyInput(entry).kind === 'url' ? GLOBE_ICON : CLOCK_ICON),
+    label: displayHistoryItem,
+    forgetTitle: 'Forget this search',
+    forget: forgetSearch
+};
+
+const USAGE_SOURCE: SuggestionSource = {
+    icon: () => COMMAND_ICON,
+    label: entry => entry,
+    forgetTitle: 'Forget this use',
+    forget: forgetCommandUse
+};
+
+function renderEntries(matches: string[], source: SuggestionSource) {
     if (!matches.length || document.activeElement !== searchInput) {
         hideSuggestions();
         return;
     }
-
     activeSuggestion = -1;
     searchSuggestions.innerHTML = '';
-    matches.forEach(query => {
+    matches.forEach(entry => {
         const item = document.createElement('li');
         item.className = 'search-suggestion';
-        item.dataset.value = query;
-        item.innerHTML =
-            classifyInput(query).kind === 'url'
-                ? '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-                  '<path d="M14 8A6 6 0 1 1 2 8a6 6 0 0 1 12 0zM2 8h12M8 2c2 2 2 10 0 12M8 2C6 4 6 12 8 14" /></svg>'
-                : '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-                  '<path d="M8 4.5V8l2.5 1.5M14 8A6 6 0 1 1 2 8a6 6 0 0 1 12 0z" /></svg>';
+        item.dataset.value = entry;
+        item.innerHTML = source.icon(entry);
 
         const text = document.createElement('span');
-        text.textContent = displayHistoryItem(query);
+        text.textContent = source.label(entry);
 
         const remove = document.createElement('button');
         remove.type = 'button';
         remove.className = 'suggestion-remove';
-        remove.title = 'Forget this search';
+        remove.title = source.forgetTitle;
         remove.innerHTML = CROSS_ICON;
         remove.addEventListener('click', e => {
             e.stopPropagation();
-            forgetSearch(query);
+            source.forget(entry);
         });
 
-        item.addEventListener('click', () => useSuggestion(query));
+        item.addEventListener('click', () => useSuggestion(entry));
         item.append(text, remove);
         searchSuggestions.appendChild(item);
     });
     searchSuggestions.hidden = false;
+}
+
+export function renderSuggestions(showAll: boolean) {
+    const raw = searchInput.value;
+    const typed = raw.trim();
+    if (typed.startsWith('/')) {
+        if (/\s/.test(raw.trimStart())) {
+            renderEntries(matchingCommandUses(typed), USAGE_SOURCE);
+        } else {
+            renderCommandSuggestions(typed);
+        }
+        return;
+    }
+    renderEntries(settings.rememberSearches && (typed || showAll) ? matchingHistory() : [], HISTORY_SOURCE);
 }
 
 export function moveSuggestion(step: number) {
@@ -246,11 +389,13 @@ export function goTo(url: string, newTab: boolean) {
 
 export function performSearch(raw: string, newTab: boolean) {
     const text = raw.trim();
+    resetCycle();
     if (!text) {
         return;
     }
     const parsed = parseCommand(text);
     if (parsed) {
+        rememberCommand(text);
         runCommand(parsed.command, parsed.args);
         return;
     }

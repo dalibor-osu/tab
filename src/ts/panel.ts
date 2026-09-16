@@ -27,6 +27,7 @@ import { DEFAULT_SETTINGS, LOOK_KEYS, customCss, saveSettings, setCustomCss, set
 import {
     COMMANDS_KEY,
     CUSTOM_CSS_KEY,
+    COMMAND_HISTORY_KEY,
     HISTORY_KEY,
     ICON_CACHE_KEY,
     INTRO_KEY,
@@ -151,7 +152,8 @@ export function applySettings() {
     }
 
     const engine = getEngine(settings.engine);
-    searchInput.placeholder = engine.id === 'custom' ? 'Search…' : `Search ${engine.label}...`;
+    const defaultPlaceholder = engine.id === 'custom' ? 'Search…' : `Search ${engine.label}...`;
+    searchInput.placeholder = settings.searchPlaceholder.trim() || defaultPlaceholder;
 
     applyFont(settings);
     applyBackground();
@@ -298,6 +300,7 @@ export async function resetAll() {
     removeRaw(STORAGE_KEY);
     removeRaw(ICON_CACHE_KEY);
     removeRaw(HISTORY_KEY);
+    removeRaw(COMMAND_HISTORY_KEY);
     removeRaw(INTRO_KEY);
     removeRaw(COMMANDS_KEY);
     removeRaw(CUSTOM_CSS_KEY);

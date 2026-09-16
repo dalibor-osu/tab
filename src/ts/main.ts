@@ -98,11 +98,14 @@ import { closePresetModal, loadPresetList, openPresetModal, presetLoadParts, sav
 import {
     activeSuggestion,
     clearHistory,
+    cycleEntries,
+    cycling,
     hideSuggestions,
     loadHistory,
     moveSuggestion,
     performSearch,
     renderSuggestions,
+    resetCycle,
     useSuggestion
 } from './search';
 import { customCss, setCustomCss, settings } from './settings';
@@ -182,8 +185,14 @@ function start() {
         performSearch(searchInput.value, false);
     });
 
-    searchInput.addEventListener('input', () => renderSuggestions(false));
-    searchInput.addEventListener('blur', hideSuggestions);
+    searchInput.addEventListener('input', () => {
+        resetCycle();
+        renderSuggestions(false);
+    });
+    searchInput.addEventListener('blur', () => {
+        hideSuggestions();
+        resetCycle();
+    });
     searchSuggestions.addEventListener('mousedown', e => e.preventDefault());
 
     searchInput.addEventListener('keydown', e => {
@@ -192,6 +201,11 @@ function start() {
             const active = searchSuggestions.querySelector<HTMLElement>('.search-suggestion.active');
             const value = active && !active.dataset.command ? active.dataset.value || '' : searchInput.value;
             performSearch(value, true);
+            return;
+        }
+
+        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && cycleEntries(e.key)) {
+            e.preventDefault();
             return;
         }
 
@@ -212,9 +226,9 @@ function start() {
             if (items.length === 1 && items[0].dataset.command) {
                 const command = findCommand(items[0].dataset.command);
                 if (command) {
-                    searchInput.value = `/${command.name}${command.type === 'search' ? ' ' : ''}`;
+                    searchInput.value = `/${command.name}${command.type === 'open' ? '' : ' '}`;
                 }
-                hideSuggestions();
+                renderSuggestions(false);
                 return;
             }
             moveSuggestion(e.shiftKey ? -1 : 1);
@@ -575,6 +589,9 @@ function start() {
                 hideIntroTip();
             } else if (!searchSuggestions.hidden) {
                 hideSuggestions();
+            } else if (cycling()) {
+                searchInput.value = '';
+                resetCycle();
             } else if (document.activeElement === searchInput) {
                 searchInput.blur();
             }

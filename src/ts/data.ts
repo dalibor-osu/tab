@@ -24,7 +24,15 @@ import {
     sanitizePresets,
     savePresetList
 } from './presets';
-import { HISTORY_MAX, saveHistory, searchHistory, setSearchHistory } from './search';
+import {
+    HISTORY_MAX,
+    commandHistory,
+    saveCommandHistory,
+    saveHistory,
+    searchHistory,
+    setCommandHistory,
+    setSearchHistory
+} from './search';
 import {
     ALL_PARTS,
     CONTENT_KEYS,
@@ -130,7 +138,7 @@ export async function runExport() {
 }
 
 export function exportHistory() {
-    const payload = { version: 1, exportedAt: new Date().toISOString(), searchHistory };
+    const payload = { version: 2, exportedAt: new Date().toISOString(), searchHistory, commandHistory };
     downloadFile('new-tab-history.json', JSON.stringify(payload));
 }
 
@@ -150,22 +158,32 @@ export async function importHistory(file: File) {
     if (!payload) {
         return;
     }
-    const list = Array.isArray(payload) ? payload : (payload as RawPayload).searchHistory;
-    if (!Array.isArray(list)) {
+    const source = payload as { searchHistory?: unknown; commandHistory?: unknown };
+    const searches = Array.isArray(payload) ? payload : source.searchHistory;
+    const usedCommands = Array.isArray(payload) ? [] : source.commandHistory;
+    if (!Array.isArray(searches) && !Array.isArray(usedCommands)) {
         alert('That file does not contain a search history.');
         return;
     }
-    const known = new Set(searchHistory.map(item => item.toLowerCase()));
+    const merged = mergeEntries(searchHistory, searches);
+    setSearchHistory(merged.list);
+    saveHistory();
+    const mergedCommands = mergeEntries(commandHistory, usedCommands);
+    setCommandHistory(mergedCommands.list);
+    saveCommandHistory();
+    showToast(`${countOf(merged.added + mergedCommands.added, 'entry', 'entries')} added to your history.`);
+}
+
+function mergeEntries(current: string[], incoming: unknown): { list: string[]; added: number } {
+    const known = new Set(current.map(item => item.toLowerCase()));
     const added: string[] = [];
-    list.forEach((item: unknown) => {
+    (Array.isArray(incoming) ? incoming : []).forEach((item: unknown) => {
         if (typeof item === 'string' && item.trim() && !known.has(item.toLowerCase())) {
             known.add(item.toLowerCase());
             added.push(item);
         }
     });
-    setSearchHistory([...searchHistory, ...added].slice(0, HISTORY_MAX));
-    saveHistory();
-    showToast(`${countOf(added.length, 'entry', 'entries')} added to your history.`);
+    return { list: [...current, ...added].slice(0, HISTORY_MAX), added: added.length };
 }
 
 export function suggestedPresetName(file: File): string {

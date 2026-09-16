@@ -18,7 +18,7 @@ import {
 } from './dom';
 import { openPanel } from './panel';
 import { CAPABILITIES, availableCapabilities, isCapability, requestGrantPermissions, runScript } from './scripts';
-import { SUGGESTION_MAX, hideSuggestions } from './search';
+import { SUGGESTION_MAX, hideSuggestions, renderSuggestions } from './search';
 import { COMMANDS_KEY, readStorage, writeStorage } from './storage';
 import type { Capability, Command, SearchCommand } from './types';
 import { CROSS_ICON, PENCIL_ICON, showToast } from './ui';
@@ -222,8 +222,8 @@ export function useCommandSuggestion(command: Command) {
         return;
     }
     searchInput.value = `/${command.name} `;
-    hideSuggestions();
     searchInput.focus();
+    renderSuggestions(false);
 }
 
 export function renderCommandList() {
