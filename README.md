@@ -44,7 +44,8 @@ bun install
 bun run check       # type check (strict)
 bun run lint
 bun run build       # website -> dist/
-bun run build:ext   # extension -> dist-ext/
+bun run build:ext   # Chromium extension -> dist-ext/
+bun run build:firefox   # Firefox extension -> dist-firefox/ (about:debugging -> Load Temporary Add-on)
 ```
 
 To install the extension, open `chrome://extensions`, enable _Developer mode_, choose _Load unpacked_ and pick the `dist-ext/` folder. The extension keeps its own settings, separate from the website – use Export/Import in the Data tab to move them over.

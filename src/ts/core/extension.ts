@@ -1,7 +1,8 @@
 export type ExtensionApi = typeof chrome;
 
 export function extensionApi(): ExtensionApi | null {
-    const api = (globalThis as { chrome?: ExtensionApi }).chrome;
+    const scope = globalThis as { browser?: ExtensionApi; chrome?: ExtensionApi };
+    const api = scope.browser && scope.browser.runtime ? scope.browser : scope.chrome;
     return api && api.runtime && api.runtime.id ? api : null;
 }
 
@@ -28,6 +29,10 @@ export function openFreshTab(api: ExtensionApi) {
 
 export function isNewTabPage(): boolean {
     return !new URLSearchParams(location.search).has('fresh') && history.length <= 1;
+}
+
+export function isFirefox(): boolean {
+    return BUILD_BROWSER === 'firefox';
 }
 
 export function permissionsApi(): typeof chrome.permissions | null {

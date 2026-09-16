@@ -1,6 +1,6 @@
-import { currentBackgroundBlob, prepareImage, saveBackground, setBackgroundSource } from './background';
+import { currentBackgroundBlob, prepareImage, saveBackground, setBackgroundSource } from '../theme/background';
 import { commands, renderCommandList, sanitizeCommands, saveCommands, setCommands } from './commands';
-import { presetList, presetModalTitle, presetName, presetOverlay, presetSaveBtn } from './dom';
+import { presetList, presetModalTitle, presetName, presetOverlay, presetSaveBtn } from '../core/dom';
 import { applySettings, syncControls } from './panel';
 import {
     ALL_PARTS,
@@ -15,7 +15,7 @@ import {
     saveSettings,
     setCustomCss,
     settings
-} from './settings';
+} from '../core/settings';
 import { renderShortcuts, sanitizeShortcuts, saveShortcuts, setShortcuts, shortcuts } from './shortcuts';
 import {
     IMAGE_KEY,
@@ -29,8 +29,8 @@ import {
     removeImage,
     removeRaw,
     writeStorage
-} from './storage';
-import type { PartKey, Parts, Preset, SettingKey, Settings } from './types';
+} from '../core/storage';
+import type { PartKey, Parts, Preset, SettingKey, Settings } from '../core/types';
 import {
     CROSS_ICON,
     OVERWRITE_ICON,
@@ -42,9 +42,9 @@ import {
     openConfirm,
     showModal,
     showToast
-} from './ui';
-import { sanitizeWidgets, saveWidgets, setWidgetsState, widgetsState } from './widgets/model';
-import { renderWidgetList, renderWidgets, syncGridControls } from './widgets/render';
+} from '../core/ui';
+import { sanitizeWidgets, saveWidgets, setWidgetsState, widgetsState } from '../widgets/model';
+import { renderWidgetList, renderWidgets, syncGridControls } from '../widgets/render';
 
 interface StoredPresetImage {
     blob: Blob;

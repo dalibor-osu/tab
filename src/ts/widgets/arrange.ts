@@ -1,7 +1,7 @@
-import { arrangeDoneBtn, settingsZone, widgetLayer } from '../dom';
-import type { Rect, WidgetItem } from '../types';
-import { openPanel } from '../panel';
-import { clampInt, showToast } from '../ui';
+import { arrangeDoneBtn, settingsZone, widgetLayer } from '../core/dom';
+import type { Rect, WidgetItem } from '../core/types';
+import { openPanel } from '../features/panel';
+import { clampInt, showToast } from '../core/ui';
 import { GRID_LIMITS, clampWidgetsToGrid, findWidget, rectFree, saveWidgets, widgetsState } from './model';
 import { mountedWidgets, placeWidget, renderWidgetList, renderWidgets, syncGridControls } from './render';
 

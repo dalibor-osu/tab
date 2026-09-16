@@ -1,5 +1,5 @@
-import { applyBackground, backgroundBlob, backgroundImage, formatBytes } from './background';
-import type { Palette } from './background';
+import { applyBackground, backgroundBlob, backgroundImage, formatBytes } from '../theme/background';
+import type { Palette } from '../theme/background';
 import {
     cssEditor,
     customEngineRow,
@@ -19,11 +19,19 @@ import {
     titleColor2Row,
     titleColorRow,
     titleFontSelect
-} from './dom';
+} from '../core/dom';
 import { renderCommandList } from './commands';
 import { clearStoredFiles, renderPresetList } from './presets';
 import { ENGINES, getEngine } from './search';
-import { DEFAULT_SETTINGS, LOOK_KEYS, customCss, saveSettings, setCustomCss, setSettings, settings } from './settings';
+import {
+    DEFAULT_SETTINGS,
+    LOOK_KEYS,
+    customCss,
+    saveSettings,
+    setCustomCss,
+    setSettings,
+    settings
+} from '../core/settings';
 import {
     COMMANDS_KEY,
     CUSTOM_CSS_KEY,
@@ -36,11 +44,11 @@ import {
     STORAGE_KEY,
     WIDGETS_KEY,
     removeRaw
-} from './storage';
-import { FONTS, applyCustomCss, applyFont, applyThemeVars } from './theme';
-import type { SettingKey } from './types';
-import { broadcastWidgetTheme } from './widgets/external';
-import { renderWidgetList, syncGridControls } from './widgets/render';
+} from '../core/storage';
+import { FONTS, applyCustomCss, applyFont, applyThemeVars } from '../theme/theme';
+import type { SettingKey } from '../core/types';
+import { broadcastWidgetTheme } from '../widgets/external';
+import { renderWidgetList, syncGridControls } from '../widgets/render';
 
 let panelReady = false;
 

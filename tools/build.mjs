@@ -6,9 +6,10 @@ import { minify as minifyHtml } from 'html-minifier-terser';
 const ROOT = resolve(import.meta.dirname, '..');
 const SRC_DIR = join(ROOT, 'src');
 const EXT_DIR = join(ROOT, 'ext');
-const TARGET = process.argv[2] === 'ext' ? 'ext' : 'web';
-const OUT_DIR = join(ROOT, TARGET === 'ext' ? 'dist-ext' : 'dist');
-const OUT_LABEL = TARGET === 'ext' ? 'dist-ext/' : 'dist/';
+const BROWSER = process.argv[2] === 'firefox' ? 'firefox' : process.argv[2] === 'ext' ? 'chromium' : 'web';
+const TARGET = BROWSER === 'web' ? 'web' : 'ext';
+const OUT_LABEL = BROWSER === 'firefox' ? 'dist-firefox/' : TARGET === 'ext' ? 'dist-ext/' : 'dist/';
+const OUT_DIR = join(ROOT, OUT_LABEL.slice(0, -1));
 const CACHE_PLACEHOLDER = 'default-page-v1';
 
 const PAGES = [
@@ -51,7 +52,7 @@ async function bundle(entry, outdir, hashed) {
         format: 'iife',
         minify: true,
         naming: hashed ? '[name].[hash].[ext]' : '[name].[ext]',
-        define: { BUILD_TARGET: JSON.stringify(TARGET) },
+        define: { BUILD_TARGET: JSON.stringify(TARGET), BUILD_BROWSER: JSON.stringify(BROWSER) },
         plugins: [widgetTextPlugin]
     });
     if (!result.success) {
@@ -112,17 +113,26 @@ async function buildExtension() {
         report(page.ext, Buffer.byteLength(input), Buffer.byteLength(adapted));
     }
 
-    await bundle(join(SRC_DIR, 'ts', 'sandbox.ts'), OUT_DIR, false);
-    const sandboxHtml = await readFile(join(EXT_DIR, 'sandbox.html'), 'utf8');
-    await writeFile(join(OUT_DIR, 'sandbox.html'), await minifyHtml(sandboxHtml, htmlOptions));
+    if (BROWSER === 'chromium') {
+        await bundle(join(SRC_DIR, 'ts', 'sandbox', 'sandbox.ts'), OUT_DIR, false);
+        const sandboxHtml = await readFile(join(EXT_DIR, 'sandbox.html'), 'utf8');
+        await writeFile(join(OUT_DIR, 'sandbox.html'), await minifyHtml(sandboxHtml, htmlOptions));
+    } else {
+        await bundle(join(SRC_DIR, 'ts', 'sandbox', 'runner.ts'), OUT_DIR, false);
+    }
 
-    const manifest = JSON.parse(await readFile(join(EXT_DIR, 'manifest.json'), 'utf8'));
+    const manifestName = BROWSER === 'firefox' ? 'manifest.firefox.json' : 'manifest.json';
+    const manifest = JSON.parse(await readFile(join(EXT_DIR, manifestName), 'utf8'));
     const pkg = JSON.parse(await readFile(join(ROOT, 'package.json'), 'utf8'));
     manifest.version = pkg.version;
     await writeFile(join(OUT_DIR, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
     await cp(join(EXT_DIR, 'icons'), join(OUT_DIR, 'icons'), { recursive: true });
 
-    console.log(`\nextension ${manifest.version} written to ${OUT_LABEL} - load it unpacked from that folder`);
+    const how =
+        BROWSER === 'firefox'
+            ? 'about:debugging → This Firefox → Load Temporary Add-on → pick its manifest.json'
+            : 'load it unpacked from that folder';
+    console.log(`\n${BROWSER} extension ${manifest.version} written to ${OUT_LABEL} - ${how}`);
 }
 
 await rm(OUT_DIR, { recursive: true, force: true });

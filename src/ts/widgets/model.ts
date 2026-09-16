@@ -1,4 +1,4 @@
-import { WIDGETS_KEY, readStorage, writeStorage } from '../storage';
+import { WIDGETS_KEY, readStorage, writeStorage } from '../core/storage';
 import type {
     ConfigType,
     ConfigValue,
@@ -10,9 +10,9 @@ import type {
     WidgetSettings,
     WidgetType,
     WidgetsState
-} from '../types';
-import { clampInt, newId } from '../ui';
-import { isHostName, isSourceUrl, parseHosts } from '../urls';
+} from '../core/types';
+import { clampInt, newId } from '../core/ui';
+import { isHostName, isSourceUrl, parseHosts } from '../core/urls';
 import { BUILTIN_WIDGETS } from './builtin';
 
 interface WidgetTypeInfo {

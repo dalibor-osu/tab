@@ -15,14 +15,14 @@ import {
     commandUrlsGroup,
     searchInput,
     settingsZone
-} from './dom';
+} from '../core/dom';
 import { openPanel } from './panel';
 import { CAPABILITIES, availableCapabilities, isCapability, requestGrantPermissions, runScript } from './scripts';
 import { SUGGESTION_MAX, hideSuggestions, renderSuggestions } from './search';
-import { COMMANDS_KEY, readStorage, writeStorage } from './storage';
-import type { Capability, Command, SearchCommand } from './types';
-import { CROSS_ICON, PENCIL_ICON, showToast } from './ui';
-import { isHostName, isWebUrl, parseHosts } from './urls';
+import { COMMANDS_KEY, readStorage, writeStorage } from '../core/storage';
+import type { Capability, Command, SearchCommand } from '../core/types';
+import { CROSS_ICON, PENCIL_ICON, showToast } from '../core/ui';
+import { isHostName, isWebUrl, parseHosts } from '../core/urls';
 
 export const COMMAND_HINT_MAX = 80;
 export const COMMAND_CODE_MAX = 20000;

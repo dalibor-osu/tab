@@ -1,4 +1,4 @@
-import './boot';
+import './core/boot';
 import {
     applyBackground,
     backgroundImage,
@@ -8,8 +8,8 @@ import {
     peekBackground,
     releaseBackground,
     setBackgroundSource
-} from './background';
-import { imagePromise } from './boot';
+} from './theme/background';
+import { imagePromise } from './core/boot';
 import {
     closeCommandModal,
     findCommand,
@@ -18,7 +18,7 @@ import {
     saveCommandForm,
     syncCommandForm,
     useCommandSuggestion
-} from './commands';
+} from './features/commands';
 import {
     closeImportModal,
     exportHistory,
@@ -28,7 +28,7 @@ import {
     runExport,
     runImport,
     syncImportForm
-} from './data';
+} from './features/data';
 import {
     addCommandBtn,
     addShortcutBtn,
@@ -91,10 +91,10 @@ import {
     widgetSaveBtn,
     widgetSource,
     widgetType
-} from './dom';
-import { extensionApi } from './extension';
-import { applySettings, buildSelect, resetAll, resetLook, syncControls, togglePanel } from './panel';
-import { closePresetModal, loadPresetList, openPresetModal, presetLoadParts, savePresetForm } from './presets';
+} from './core/dom';
+import { extensionApi } from './core/extension';
+import { applySettings, buildSelect, resetAll, resetLook, syncControls, togglePanel } from './features/panel';
+import { closePresetModal, loadPresetList, openPresetModal, presetLoadParts, savePresetForm } from './features/presets';
 import {
     activeSuggestion,
     clearHistory,
@@ -107,8 +107,8 @@ import {
     renderSuggestions,
     resetCycle,
     useSuggestion
-} from './search';
-import { customCss, setCustomCss, settings } from './settings';
+} from './features/search';
+import { customCss, setCustomCss, settings } from './core/settings';
 import {
     closeModal,
     contextTarget,
@@ -118,12 +118,20 @@ import {
     loadShortcuts,
     openModal,
     saveNewShortcut
-} from './shortcuts';
-import { CUSTOM_CSS_KEY, INTRO_KEY, readRaw, writeRaw } from './storage';
-import { applyCustomCss, safeMode } from './theme';
-import type { PartKey } from './types';
-import { handleScriptMessage, postToScript, scriptForSource } from './scripts';
-import { closeConfirm, confirmDelete, hideIntroTip, hideModal, showIntroTip, showSupportNotice, showToast } from './ui';
+} from './features/shortcuts';
+import { CUSTOM_CSS_KEY, INTRO_KEY, readRaw, writeRaw } from './core/storage';
+import { applyCustomCss, safeMode } from './theme/theme';
+import type { PartKey } from './core/types';
+import { handleScriptMessage, postToScript, scriptForSource } from './features/scripts';
+import {
+    closeConfirm,
+    confirmDelete,
+    hideIntroTip,
+    hideModal,
+    showIntroTip,
+    showSupportNotice,
+    showToast
+} from './core/ui';
 import {
     arrangeDrag,
     arrangePointerMove,
@@ -160,6 +168,20 @@ type Timer = ReturnType<typeof setTimeout> | undefined;
 
 function byId(id: string): HTMLElement {
     return document.getElementById(id) as HTMLElement;
+}
+
+function typingShouldGoToSearch(): boolean {
+    const active = document.activeElement;
+    if (active === searchInput || arranging || document.querySelector('.modal-overlay.active')) {
+        return false;
+    }
+    if (!active || active === document.body) {
+        return true;
+    }
+    if (settingsZone.contains(active) || (active as HTMLElement).isContentEditable) {
+        return false;
+    }
+    return !active.matches('input, textarea, select, button, a, [tabindex]');
 }
 
 function afterFirstPaint(task: () => void) {
@@ -597,13 +619,17 @@ function start() {
             }
         }
 
-        if (e.key === '/' && document.activeElement !== searchInput && !settingsZone.contains(document.activeElement)) {
-            e.preventDefault();
-            searchInput.focus();
-            if (!searchInput.value) {
-                searchInput.value = '/';
-                renderSuggestions(false);
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && typingShouldGoToSearch()) {
+            if (e.key === '/') {
+                e.preventDefault();
+                searchInput.focus();
+                if (!searchInput.value) {
+                    searchInput.value = '/';
+                    renderSuggestions(false);
+                }
+                return;
             }
+            searchInput.focus();
         }
 
         if (e.key === 'Enter' && modalOverlay.classList.contains('active')) {

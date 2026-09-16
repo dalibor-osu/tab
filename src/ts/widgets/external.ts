@@ -1,12 +1,13 @@
-import { widgetGrantBtn, widgetGrantHint, widgetGrantRow, widgetHosts } from '../dom';
-import { extensionApi, hasDirectAccess, hostOrigins, permissionsApi } from '../extension';
-import { openInNewTab } from '../shortcuts';
-import type { WidgetItem } from '../types';
-import { showToast } from '../ui';
-import { isHostName, isWebUrl, parseHosts } from '../urls';
+import { widgetGrantBtn, widgetGrantHint, widgetGrantRow, widgetHosts } from '../core/dom';
+import { extensionApi, hasDirectAccess, hostOrigins, isFirefox, permissionsApi } from '../core/extension';
+import { widgetDocument } from '../sandbox/frames';
+import { openInNewTab } from '../features/shortcuts';
+import type { WidgetItem } from '../core/types';
+import { showToast } from '../core/ui';
+import { isHostName, isWebUrl, parseHosts } from '../core/urls';
 import { showWidgetError } from './editor';
 import { WIDGET_DATA_MAX, WIDGET_FETCH_MAX, saveWidgets, widgetHtml } from './model';
-import { mountedWidgets } from './render';
+import { markWidgetReady, mountedWidgets } from './render';
 
 export interface WidgetTarget {
     id: string;
@@ -19,11 +20,6 @@ export interface WidgetTheme {
 }
 
 type Message = Record<string, unknown>;
-
-export const WIDGET_CSP =
-    "default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; " +
-    "img-src data: blob:; font-src data:; media-src data: blob:; connect-src 'none'; " +
-    "form-action 'none'; base-uri 'none'";
 
 export const THEME_VARS = [
     '--accent',
@@ -55,105 +51,24 @@ export function widgetTheme(): WidgetTheme {
     return { vars };
 }
 
-export function widgetBridge() {
-    const host = window.parent;
-    const pending = new Map<number, { resolve: (value: unknown) => void; reject: (error: Error) => void }>();
-    let seq = 0;
-    const send = (message: Record<string, unknown>) => host.postMessage({ source: 'tab-widget', ...message }, '*');
-    const request = (type: string, payload: Record<string, unknown>) =>
-        new Promise<unknown>((resolve, reject) => {
-            const id = ++seq;
-            pending.set(id, { resolve, reject });
-            send({ type, id, ...payload });
-        });
-    const emit = (name: string, detail: unknown) => window.dispatchEvent(new CustomEvent('tab:' + name, { detail }));
-    const tab = {
-        theme: { vars: {} as Record<string, string> },
-        size: { width: 0, height: 0 },
-        data: null as unknown,
-        config: {} as Record<string, unknown>,
-        storage: {
-            get: () => request('storage.get', {}),
-            set: (value: unknown) => request('storage.set', { value })
-        },
-        fetch: (url: string, init?: Record<string, unknown>) => request('fetch', { url, init: init || {} }),
-        open: (url: string) => send({ type: 'open', url }),
-        on: (name: string, handler: (detail: unknown) => void) =>
-            window.addEventListener('tab:' + name, event => handler((event as CustomEvent).detail))
-    };
-    const applyTheme = (theme: { vars?: Record<string, string> }) => {
-        tab.theme = { vars: theme.vars || {} };
-        Object.entries(theme.vars || {}).forEach(([name, value]) => {
-            document.documentElement.style.setProperty(name, value);
-        });
-    };
-    window.addEventListener('message', event => {
-        const message = event.data as Record<string, unknown> | null;
-        if (event.source !== host || !message || message.source !== 'tab-host') {
-            return;
-        }
-        if (message.type === 'init') {
-            applyTheme(message.theme as { vars?: Record<string, string> });
-            tab.size = message.size as { width: number; height: number };
-            tab.data = message.data;
-            tab.config = (message.config as Record<string, unknown>) || {};
-            emit('init', tab);
-        } else if (message.type === 'config') {
-            tab.config = (message.config as Record<string, unknown>) || {};
-            emit('config', tab.config);
-        } else if (message.type === 'theme') {
-            applyTheme(message.theme as { vars?: Record<string, string> });
-            emit('theme', message.theme);
-        } else if (message.type === 'resize') {
-            tab.size = message.size as { width: number; height: number };
-            emit('resize', message.size);
-        } else if (message.type === 'reply') {
-            const waiting = pending.get(message.id as number);
-            if (!waiting) {
-                return;
-            }
-            pending.delete(message.id as number);
-            if (message.error) {
-                waiting.reject(new Error(String(message.error)));
-            } else {
-                waiting.resolve(message.result);
-            }
-        }
-    });
-    (window as unknown as { tab: unknown }).tab = tab;
-    send({ type: 'ready' });
-}
-
-export function wrapWidgetDocument(item: WidgetItem): string {
-    const vars = widgetTheme().vars;
-    const themeCss = Object.entries(vars)
-        .map(([name, value]) => `${name}:${value}`)
-        .join(';');
-    return (
-        '<!DOCTYPE html><html><head><meta charset="utf-8">' +
-        `<meta http-equiv="Content-Security-Policy" content="${WIDGET_CSP}">` +
-        '<meta name="viewport" content="width=device-width, initial-scale=1">' +
-        `<style>:root{${themeCss}}html,body{margin:0;height:100%;overflow:hidden}` +
-        'body{box-sizing:border-box;font-family:var(--font-stack);color:var(--text-primary)}*{box-sizing:inherit}</style>' +
-        '<scr' +
-        `ipt>(${widgetBridge.toString()})();</scr` +
-        'ipt></head><body>' +
-        widgetHtml(item) +
-        '</body></html>'
-    );
-}
-
 export function postToWidget(frame: HTMLIFrameElement | null, message: Message) {
     if (frame && frame.contentWindow) {
         frame.contentWindow.postMessage({ source: 'tab-host', ...message }, '*');
     }
 }
 
+export function wrapWidgetDocument(item: WidgetItem): string {
+    const themeCss = Object.entries(widgetTheme().vars)
+        .map(([name, value]) => `${name}:${value}`)
+        .join(';');
+    return widgetDocument(widgetHtml(item), themeCss);
+}
+
 export function loadWidgetFrame(frame: HTMLIFrameElement, item: WidgetItem) {
     frame.classList.remove('ready');
     const html = wrapWidgetDocument(item);
     const api = extensionApi();
-    if (!api) {
+    if (!api || isFirefox()) {
         widgetDocs.delete(item.id);
         frame.srcdoc = html;
         return;
@@ -262,6 +177,7 @@ export async function handleWidgetMessage(target: WidgetTarget, item: WidgetItem
         postToWidget(target.frame, { type: 'reply', id: message.id, result, error });
     if (message.type === 'ready') {
         target.frame.classList.add('ready');
+        markWidgetReady(target.id);
         postToWidget(target.frame, {
             type: 'init',
             theme: widgetTheme(),

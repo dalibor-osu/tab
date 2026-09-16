@@ -1,4 +1,4 @@
-import { applyStoredTheme } from './pageTheme';
+import { applyStoredTheme } from './theme/pageTheme';
 
 applyStoredTheme();
 

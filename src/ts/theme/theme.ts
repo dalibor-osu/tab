@@ -1,8 +1,8 @@
-import { clamp, rgba, shade } from './color';
+import { clamp, rgba, shade } from '../core/color';
 import { resolveFont } from './fonts';
-import { DEFAULT_SETTINGS } from './settings';
-import { THUMB_KEY, readRaw } from './storage';
-import type { Settings } from './types';
+import { DEFAULT_SETTINGS } from '../core/settings';
+import { THUMB_KEY, readRaw } from '../core/storage';
+import type { Settings } from '../core/types';
 
 export { FONTS, SYSTEM_STACK, getFont, resolveFont } from './fonts';
 

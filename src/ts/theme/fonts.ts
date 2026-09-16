@@ -1,5 +1,5 @@
-import type { Font } from './types';
-import { webUrl } from './urls';
+import type { Font } from '../core/types';
+import { webUrl } from '../core/urls';
 
 export const SYSTEM_STACK = "'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif";
 

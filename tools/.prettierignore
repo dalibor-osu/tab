@@ -1,5 +1,6 @@
 dist/
 dist-ext/
+dist-firefox/
 node_modules/
 bun.lock
 background*

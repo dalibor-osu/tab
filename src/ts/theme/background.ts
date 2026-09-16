@@ -1,12 +1,12 @@
-import { clamp, hslToHex, rgbToHsl } from './color';
-import type { Hsl } from './color';
-import { bgFull, imageHint, settingsZone, themeStatus } from './dom';
-import { applySettings, syncControls } from './panel';
-import { saveSettings, setSettings, settings } from './settings';
-import { THUMB_KEY, readRaw, removeImage, removeRaw, storeImage, writeRaw } from './storage';
+import { clamp, hslToHex, rgbToHsl } from '../core/color';
+import type { Hsl } from '../core/color';
+import { bgFull, imageHint, settingsZone, themeStatus } from '../core/dom';
+import { applySettings, syncControls } from '../features/panel';
+import { saveSettings, setSettings, settings } from '../core/settings';
+import { THUMB_KEY, readRaw, removeImage, removeRaw, storeImage, writeRaw } from '../core/storage';
 import { setVar } from './theme';
-import type { PreparedImage, Settings } from './types';
-import { webUrl } from './urls';
+import type { PreparedImage, Settings } from '../core/types';
+import { webUrl } from '../core/urls';
 
 export type Palette = Pick<Settings, 'accent' | 'bg' | 'textPrimary' | 'textSecondary' | 'panelColor' | 'panelAlpha'>;
 

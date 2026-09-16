@@ -6,6 +6,7 @@
   "scripts": {
     "build": "bun tools/build.mjs",
     "build:ext": "bun tools/build.mjs ext",
+    "build:firefox": "bun tools/build.mjs firefox",
     "icons": "bun tools/make-icons.mjs",
     "lint": "eslint . --config tools/eslint.config.js",
     "lint:fix": "eslint . --config tools/eslint.config.js --fix",

@@ -6,13 +6,13 @@ import {
     runCommand,
     useCommandSuggestion
 } from './commands';
-import { searchForm, searchInput, searchSuggestions } from './dom';
-import { settings } from './settings';
+import { searchForm, searchInput, searchSuggestions } from '../core/dom';
+import { settings } from '../core/settings';
 import { openInNewTab } from './shortcuts';
-import { COMMAND_HISTORY_KEY, HISTORY_KEY, readStorage, writeStorage } from './storage';
-import type { Engine } from './types';
-import { CROSS_ICON } from './ui';
-import { isWebUrl } from './urls';
+import { COMMAND_HISTORY_KEY, HISTORY_KEY, readStorage, writeStorage } from '../core/storage';
+import type { Engine } from '../core/types';
+import { CROSS_ICON } from '../core/ui';
+import { isWebUrl } from '../core/urls';
 
 export type Classified = { kind: 'search'; query: string } | { kind: 'url'; url: string };
 

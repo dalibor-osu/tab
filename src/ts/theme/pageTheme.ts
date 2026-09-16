@@ -1,7 +1,7 @@
-import { rgba, shade } from './color';
+import { rgba, shade } from '../core/color';
 import { resolveFont } from './fonts';
-import { SETTINGS_KEY, readStorage } from './storage';
-import type { Settings } from './types';
+import { SETTINGS_KEY, readStorage } from '../core/storage';
+import type { Settings } from '../core/types';
 
 type StoredSettings = Partial<Settings> & { bgStart?: string };
 

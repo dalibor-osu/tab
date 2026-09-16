@@ -16,11 +16,11 @@ import {
     widgetW,
     widgetX,
     widgetY
-} from '../dom';
-import { buildSelect } from '../panel';
-import type { ConfigValue, WidgetManifest, WidgetSettings, WidgetType } from '../types';
-import { clampInt, hideModal, newId, showModal } from '../ui';
-import { isHostName, isSourceUrl, parseHosts } from '../urls';
+} from '../core/dom';
+import { buildSelect } from '../features/panel';
+import type { ConfigValue, WidgetManifest, WidgetSettings, WidgetType } from '../core/types';
+import { clampInt, hideModal, newId, showModal } from '../core/ui';
+import { isHostName, isSourceUrl, parseHosts } from '../core/urls';
 import { BUILTIN_WIDGETS } from './builtin';
 import { syncGrantRow } from './external';
 import {

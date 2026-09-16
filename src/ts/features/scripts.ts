@@ -1,13 +1,14 @@
 import { commands } from './commands';
-import { extensionApi, permissionsApi } from './extension';
+import { extensionApi, isFirefox, permissionsApi } from '../core/extension';
+import { scriptDocument } from '../sandbox/frames';
 import { applySettings, syncControls } from './panel';
 import { clearHistory, performSearch, rememberSearch, searchHistory } from './search';
-import { DEFAULT_SETTINGS, PRESET_KEYS, pickSettings, saveSettings, setSettings, settings } from './settings';
+import { DEFAULT_SETTINGS, PRESET_KEYS, pickSettings, saveSettings, setSettings, settings } from '../core/settings';
 import { openInNewTab, renderShortcuts, sanitizeShortcuts, saveShortcuts, setShortcuts, shortcuts } from './shortcuts';
-import type { Capability, ScriptCommand } from './types';
-import { cloneData, newId, showToast } from './ui';
-import { isWebUrl } from './urls';
-import { WIDGET_CSP, proxyFetch } from './widgets/external';
+import type { Capability, ScriptCommand } from '../core/types';
+import { cloneData, newId, showToast } from '../core/ui';
+import { isWebUrl } from '../core/urls';
+import { proxyFetch } from '../widgets/external';
 import {
     findWidget,
     sanitizeWidgetConfig,
@@ -15,8 +16,8 @@ import {
     widgetHtml,
     widgetManifest,
     widgetsState
-} from './widgets/model';
-import { renderWidgetList, renderWidgets } from './widgets/render';
+} from '../widgets/model';
+import { renderWidgetList, renderWidgets } from '../widgets/render';
 
 export interface CapabilityInfo {
     label: string;
@@ -109,83 +110,6 @@ export async function requestGrantPermissions(grants: Capability[]): Promise<boo
     }
 }
 
-export function scriptBridge(args: string) {
-    const host = window.parent;
-    const pending = new Map<number, { resolve: (value: unknown) => void; reject: (error: Error) => void }>();
-    let seq = 0;
-    const send = (message: Record<string, unknown>) => host.postMessage({ source: 'tab-script', ...message }, '*');
-    const request = (type: string, params: unknown[]) =>
-        new Promise<unknown>((resolve, reject) => {
-            const id = ++seq;
-            pending.set(id, { resolve, reject });
-            send({ type, id, params });
-        });
-    const remote = (space: string, methods: string[]) => {
-        const api: Record<string, (...params: unknown[]) => Promise<unknown>> = {};
-        methods.forEach(method => {
-            api[method] = (...params: unknown[]) => request(space + '.' + method, params);
-        });
-        return api;
-    };
-    const describe = (error: unknown) =>
-        error instanceof Error ? error.message : typeof error === 'string' ? error : JSON.stringify(error);
-    window.addEventListener('message', event => {
-        const message = event.data as Record<string, unknown> | null;
-        if (event.source !== host || !message || message.source !== 'tab-host' || message.type !== 'reply') {
-            return;
-        }
-        const waiting = pending.get(message.id as number);
-        if (!waiting) {
-            return;
-        }
-        pending.delete(message.id as number);
-        if (message.error) {
-            waiting.reject(new Error(String(message.error)));
-        } else {
-            waiting.resolve(message.result);
-        }
-    });
-    window.addEventListener('error', event => send({ type: 'error', message: event.message }));
-    window.addEventListener('unhandledrejection', event => send({ type: 'error', message: describe(event.reason) }));
-    (window as unknown as { tab: unknown }).tab = {
-        args,
-        open: (url: string) => send({ type: 'open', url }),
-        search: (text: string, newTab?: boolean) => send({ type: 'search', text, newTab: Boolean(newTab) }),
-        toast: (text: string) => send({ type: 'toast', text }),
-        copy: (text: string) => request('clipboard.copy', [text]),
-        paste: () => request('clipboard.paste', []),
-        fetch: (url: string, init?: Record<string, unknown>) => request('fetch', [url, init || {}]),
-        settings: remote('settings', ['get', 'set']),
-        shortcuts: remote('shortcuts', ['list', 'add', 'remove']),
-        commands: remote('commands', ['list']),
-        history: remote('history', ['list', 'add', 'clear']),
-        widgets: remote('widgets', ['list', 'update']),
-        tabs: remote('tabs', ['list', 'open', 'activate', 'close']),
-        bookmarks: remote('bookmarks', ['search', 'add']),
-        done: (value: unknown) => {
-            try {
-                send({ type: 'done', value });
-            } catch {
-                send({ type: 'done', value: String(value) });
-            }
-        },
-        fail: (error: unknown) => send({ type: 'error', message: describe(error) })
-    };
-}
-
-export function wrapScriptDocument(command: ScriptCommand, args: string): string {
-    const code = command.code.replace(/<\/script/gi, '<\\/script');
-    return (
-        '<!DOCTYPE html><html><head><meta charset="utf-8">' +
-        `<meta http-equiv="Content-Security-Policy" content="${WIDGET_CSP}">` +
-        '<scr' +
-        `ipt>(${scriptBridge.toString()})(${JSON.stringify(args)});</scr` +
-        'ipt><scr' +
-        `ipt>(async () => {\n${code}\n})().then(value => tab.done(value), error => tab.fail(error));</scr` +
-        'ipt></head><body></body></html>'
-    );
-}
-
 export function runScript(command: ScriptCommand, args: string) {
     const id = newId();
     const frame = document.createElement('iframe');
@@ -196,13 +120,13 @@ export function runScript(command: ScriptCommand, args: string) {
         id,
         command,
         frame,
-        html: wrapScriptDocument(command, args),
+        html: scriptDocument(command.code, args),
         timer: setTimeout(() => finishScript(id, `/${command.name} was stopped after 60 seconds.`), SCRIPT_TIMEOUT_MS)
     };
     scriptRuns.set(id, run);
     document.body.appendChild(frame);
     const api = extensionApi();
-    if (api) {
+    if (api && !isFirefox()) {
         frame.src = api.runtime.getURL('sandbox.html') + '?w=' + encodeURIComponent('script-' + id);
     } else {
         frame.srcdoc = run.html;

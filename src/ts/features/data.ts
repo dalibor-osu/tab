@@ -1,4 +1,4 @@
-import { currentBackgroundBlob } from './background';
+import { currentBackgroundBlob } from '../theme/background';
 import { commands, describeGrants, hasScriptCommands } from './commands';
 import {
     exportOverlay,
@@ -12,7 +12,7 @@ import {
     importOverlay,
     importPresetName,
     importSummary
-} from './dom';
+} from '../core/dom';
 import {
     PRESET_NAME_MAX,
     addImportedPreset,
@@ -42,12 +42,12 @@ import {
     customCss,
     pickSettings,
     settings
-} from './settings';
+} from '../core/settings';
 import { sanitizeShortcuts, shortcuts } from './shortcuts';
-import { fileToDataUrl } from './storage';
-import type { ExportPayload, PartKey, Parts, Preset } from './types';
-import { cloneData, countOf, downloadFile, hideModal, showModal, showToast } from './ui';
-import { widgetsState } from './widgets/model';
+import { fileToDataUrl } from '../core/storage';
+import type { ExportPayload, PartKey, Parts, Preset } from '../core/types';
+import { cloneData, countOf, downloadFile, hideModal, showModal, showToast } from '../core/ui';
+import { widgetsState } from '../widgets/model';
 
 type RawPayload = Record<string, unknown>;
 

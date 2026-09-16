@@ -7,13 +7,13 @@ import {
     shortcutName,
     shortcutUrl,
     shortcutsGrid
-} from './dom';
-import { extensionApi } from './extension';
-import { settings } from './settings';
-import { ICON_CACHE_KEY, STORAGE_KEY, readStorage, removeRaw, writeStorage } from './storage';
-import type { Shortcut } from './types';
-import { openConfirm } from './ui';
-import { WEBSITE_URL, getHostname, isLinkUrl, selfUrl } from './urls';
+} from '../core/dom';
+import { extensionApi, isFirefox } from '../core/extension';
+import { settings } from '../core/settings';
+import { ICON_CACHE_KEY, STORAGE_KEY, readStorage, removeRaw, writeStorage } from '../core/storage';
+import type { Shortcut } from '../core/types';
+import { openConfirm } from '../core/ui';
+import { WEBSITE_URL, getHostname, isLinkUrl, selfUrl } from '../core/urls';
 
 interface IconCacheEntry {
     src?: string;
@@ -94,7 +94,7 @@ export function getInitial(url: string): string {
 export function iconSources(host: string): string[] {
     const sources: string[] = [];
     const api = extensionApi();
-    if (api) {
+    if (api && !isFirefox()) {
         sources.push(api.runtime.getURL(`/_favicon/?pageUrl=${encodeURIComponent('https://' + host)}&size=32`));
     }
     sources.push(`https://${host}/favicon.ico`);

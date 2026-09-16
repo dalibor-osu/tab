@@ -9,7 +9,7 @@ import {
     supportNoticeClose,
     toast
 } from './dom';
-import { openPanel } from './panel';
+import { openPanel } from '../features/panel';
 import { INTRO_KEY, writeRaw } from './storage';
 
 let toastTimer: ReturnType<typeof setTimeout> | undefined;

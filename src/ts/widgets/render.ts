@@ -1,7 +1,7 @@
-import { gridCols, gridColsValue, gridRows, gridRowsValue, widgetLayer, widgetList } from '../dom';
-import { setVar } from '../theme';
-import type { WidgetItem } from '../types';
-import { CROSS_ICON, PENCIL_ICON, openConfirm } from '../ui';
+import { gridCols, gridColsValue, gridRows, gridRowsValue, widgetLayer, widgetList } from '../core/dom';
+import { setVar } from '../theme/theme';
+import type { WidgetItem } from '../core/types';
+import { CROSS_ICON, PENCIL_ICON, openConfirm } from '../core/ui';
 import { openWidgetModal } from './editor';
 import { loadWidgetFrame, postToWidget, widgetDocs, widgetResizeObserver } from './external';
 import { WIDGET_TYPES, saveWidgets, widgetHtml, widgetManifest, widgetsState } from './model';
@@ -11,8 +11,32 @@ interface FrameKeys {
     config: string;
 }
 
+export const READY_TIMEOUT_MS = 4000;
+
 export const mountedWidgets = new Map<string, HTMLElement>();
 const frameKeys = new Map<string, FrameKeys>();
+const readyTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+export function markWidgetReady(id: string) {
+    clearTimeout(readyTimers.get(id));
+    readyTimers.delete(id);
+    const el = mountedWidgets.get(id);
+    if (el) {
+        el.classList.remove('blocked');
+    }
+}
+
+function watchWidgetReady(id: string, el: HTMLElement) {
+    clearTimeout(readyTimers.get(id));
+    el.classList.remove('blocked');
+    readyTimers.set(
+        id,
+        setTimeout(() => {
+            readyTimers.delete(id);
+            el.classList.add('blocked');
+        }, READY_TIMEOUT_MS)
+    );
+}
 
 export function placeWidget(el: HTMLElement, item: { x: number; y: number; w: number; h: number }) {
     el.style.gridColumn = `${item.x + 1} / span ${item.w}`;
@@ -42,6 +66,7 @@ export function updateWidget(el: HTMLElement, item: WidgetItem) {
     const frame = el.querySelector('iframe') as HTMLIFrameElement;
     frameKeys.set(item.id, keys);
     if (!previous || previous.code !== keys.code) {
+        watchWidgetReady(item.id, el);
         loadWidgetFrame(frame, item);
     } else if (previous.config !== keys.config) {
         postToWidget(frame, { type: 'config', config: item.settings.config });
@@ -57,6 +82,8 @@ export function unmountWidget(id: string) {
     mountedWidgets.delete(id);
     frameKeys.delete(id);
     widgetDocs.delete(id);
+    clearTimeout(readyTimers.get(id));
+    readyTimers.delete(id);
 }
 
 export function applyGrid() {

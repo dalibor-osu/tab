@@ -3,13 +3,13 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default [
-    { ignores: ['**/dist/**', '**/dist-ext/**', '**/node_modules/**', 'widgets/**'] },
+    { ignores: ['**/dist/**', '**/dist-ext/**', '**/dist-firefox/**', '**/node_modules/**', 'widgets/**'] },
     js.configs.recommended,
     ...tseslint.configs.recommended,
     {
         files: ['src/ts/**/*.ts'],
         languageOptions: {
-            globals: { ...globals.browser, BUILD_TARGET: 'readonly' }
+            globals: { ...globals.browser, BUILD_TARGET: 'readonly', BUILD_BROWSER: 'readonly' }
         },
         rules: {
             '@typescript-eslint/no-unused-vars': [
@@ -58,5 +58,9 @@ export default [
                 { object: 'document', property: 'execCommand', message: 'Deprecated: use the Clipboard API.' }
             ]
         }
+    },
+    {
+        files: ['src/ts/sandbox/runner.ts'],
+        rules: { 'no-new-func': 'off' }
     }
 ];
