@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "tab",
+  "version": "0.0.0",
+  "description": "A simple, private and fully customizable new tab page. Everything stays in your browser.",
+  "homepage_url": "https://github.com/dalibor-osu/tab",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": ["favicon"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "sandbox": {
+    "pages": ["sandbox.html"]
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; frame-src 'self'",
+    "sandbox": "sandbox allow-scripts allow-forms; script-src 'self' 'unsafe-inline' 'unsafe-eval'; default-src 'none'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; connect-src 'none'; form-action 'none'"
+  },
+  "optional_host_permissions": ["https://*/*"]
+}

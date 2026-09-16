@@ -1,0 +1,6 @@
+dist/
+dist-ext/
+node_modules/
+bun.lock
+background*
+ext/icons/

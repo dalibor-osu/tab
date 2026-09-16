@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="robots" content="noindex" />
+        <title>Page not found</title>
+        <link rel="stylesheet" href="notfound.css" />
+        <script src="notfound.js"></script>
+    </head>
+
+    <body>
+        <main class="page">
+            <a class="back" href="/tab/">
+                <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M10 3L5 8l5 5" />
+                </svg>
+                Back to the start page
+            </a>
+
+            <div class="code">404</div>
+            <h1>Page not found</h1>
+            <p class="lead">There's nothing at this address.</p>
+
+            <section class="card">
+                <h2>What happened?</h2>
+                <p>
+                    The page you asked for doesn't exist on this site. It may have been moved, or the link you followed
+                    might be broken.
+                </p>
+                <p>You requested: <code class="path" id="requestedPath"></code></p>
+                <div class="actions">
+                    <a class="btn btn-primary" href="/tab/">Go to the start page</a>
+                    <button class="btn" id="backBtn" type="button">Go back</button>
+                </div>
+            </section>
+
+            <p class="footer">
+                Made with ♡ by
+                <a href="https://github.com/dalibor-osu" target="_blank" rel="noopener noreferrer">Dalibor</a>
+            </p>
+        </main>
+    </body>
+</html>

@@ -1,0 +1,135 @@
+:root {
+    --font-stack: 'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-scale: 1;
+    --accent: #c44dff;
+    --accent-light: #e884ff;
+    --bg: #12121c;
+    --text-primary: #ffffff;
+    --text-secondary: #9ca3af;
+    --panel-bg: rgba(0, 0, 0, 0.35);
+    --card-border: rgba(255, 255, 255, 0.12);
+    --shadow-color: rgba(196, 77, 255, 0.35);
+    --radius: 15px;
+    --card-blur: 10px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: calc(16px * var(--font-scale));
+}
+
+body {
+    font-family: var(--font-stack);
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    padding: 60px 20px 80px;
+    line-height: 1.6;
+}
+
+.page {
+    width: 100%;
+    max-width: 720px;
+}
+
+.back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 30px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+}
+
+.back:hover {
+    color: var(--text-primary);
+}
+
+.back svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+h1 {
+    font-size: 2.6rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.lead {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    margin-bottom: 40px;
+}
+
+.card {
+    background: var(--panel-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 28px 30px;
+    margin-bottom: 20px;
+    -webkit-backdrop-filter: blur(var(--card-blur));
+    backdrop-filter: blur(var(--card-blur));
+}
+
+.card h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.card p + p {
+    margin-top: 12px;
+}
+
+.card ul {
+    padding-left: 22px;
+}
+
+.card li + li {
+    margin-top: 6px;
+}
+
+a {
+    color: var(--accent-light);
+}
+
+.footer {
+    margin-top: 40px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 40px 16px 60px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .card {
+        padding: 22px 20px;
+    }
+}

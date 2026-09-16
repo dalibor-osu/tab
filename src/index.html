@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>New Tab</title>
+        <link rel="stylesheet" href="page.css" />
+        <script src="main.js"></script>
+    </head>
+
+    <body class="intro">
+        <div class="bg"></div>
+        <div class="bg bg-full" id="bgFull"></div>
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="header">
+                <h1 class="logo" id="logo">Hello</h1>
+                <p class="subtitle" id="subtitle">Where would you like to go?</p>
+            </div>
+
+            <div class="search-container">
+                <form class="search-form" id="searchForm">
+                    <input
+                        type="text"
+                        class="search-input"
+                        id="searchInput"
+                        placeholder="Search..."
+                        autocomplete="off"
+                        autofocus
+                    />
+                    <button type="submit" class="search-button">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3S3 5.91 3 9.5C3 13.09 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14z"
+                            />
+                        </svg>
+                    </button>
+                </form>
+                <ul class="search-suggestions" id="searchSuggestions" hidden></ul>
+            </div>
+
+            <div class="shortcuts-section">
+                <h2 class="section-title" id="shortcutsTitle">Quick Access</h2>
+                <div class="shortcuts-grid" id="shortcutsGrid"></div>
+                <button class="add-shortcut-btn" id="addShortcutBtn" title="Add shortcut">
+                    <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 2v12M2 8h12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="widget-layer" id="widgetLayer"></div>
+        <button type="button" class="arrange-done" id="arrangeDoneBtn" hidden>Done arranging</button>
+
+        <p class="footer">
+            Made with ♡ by
+            <a href="https://github.com/dalibor-osu" target="_blank" rel="noopener noreferrer">Dalibor</a>
+            <br />
+            No cookies used. Keep them. Eat them. I don't want them.
+        </p>
+
+        <div class="settings-zone" id="settingsZone">
+            <div class="intro-tip" id="introTip" hidden>
+                <div class="intro-tip-title">Welcome!</div>
+                <p>The controls for this page hide in this corner — move the mouse here to reveal them:</p>
+                <ul>
+                    <li>
+                        <span class="intro-tip-icon">
+                            <svg
+                                class="icon-stroke"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                                aria-hidden="true"
+                            >
+                                <g transform="translate(12 12) scale(1.3) translate(-12 -12)">
+                                    <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" vector-effect="non-scaling-stroke" />
+                                    <path d="M12 17h.01" vector-effect="non-scaling-stroke" />
+                                </g>
+                            </svg>
+                        </span>
+                        <span>About this page</span>
+                    </li>
+                    <li>
+                        <span class="intro-tip-icon">
+                            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path
+                                    d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+                                />
+                            </svg>
+                        </span>
+                        <span>Source code on GitHub</span>
+                    </li>
+                    <li>
+                        <span class="intro-tip-icon">
+                            <svg
+                                class="icon-stroke"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                                aria-hidden="true"
+                            >
+                                <circle cx="12" cy="12" r="3" />
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                                />
+                            </svg>
+                        </span>
+                        <span>Customize — colors, background, fonts, search engine</span>
+                    </li>
+                </ul>
+                <p class="intro-tip-note">
+                    Add shortcuts with the + button; right-click one (double-tap on a phone) to edit it, press and hold
+                    to reorder. Everything you change stays in this browser only. More info can be found at the About
+                    page.
+                </p>
+                <button class="modal-btn btn-save" id="introTipBtn">Got it</button>
+            </div>
+            <div class="settings-panel">
+                <div class="settings-head">
+                    <h2>Customize</h2>
+                    <button class="settings-close" id="settingsClose" title="Close">&times;</button>
+                </div>
+
+                <div class="settings-tabs">
+                    <button class="settings-tab active" data-tab="theme">Theme</button>
+                    <button class="settings-tab" data-tab="background">Background</button>
+                    <button class="settings-tab" data-tab="content">Content</button>
+                    <button class="settings-tab" data-tab="commands">Commands</button>
+                    <button class="settings-tab" data-tab="css">CSS</button>
+                    <button class="settings-tab" data-tab="presets">Presets</button>
+                    <button class="settings-tab" data-tab="widgets">Widgets</button>
+                    <button class="settings-tab" data-tab="data">Data</button>
+                </div>
+
+                <div class="settings-page active" data-page="theme">
+                    <div class="settings-group">
+                        <div class="settings-group-title">Color presets</div>
+                        <div class="presets" id="presets"></div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Colors</div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Accent</span>
+                                <input type="color" data-setting="accent" />
+                            </label>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Background</span>
+                                <input type="color" data-setting="bg" />
+                            </label>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Text</span>
+                                <input type="color" data-setting="textPrimary" />
+                            </label>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Muted text</span>
+                                <input type="color" data-setting="textSecondary" />
+                            </label>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Cards</span>
+                                <input type="color" data-setting="panelColor" />
+                            </label>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Card opacity</span><span class="settings-value" data-value="panelAlpha"></span>
+                            </label>
+                            <input type="range" data-setting="panelAlpha" min="0" max="1" step="0.05" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Card blur</span><span class="settings-value" data-value="cardBlur"></span>
+                            </label>
+                            <input type="range" data-setting="cardBlur" min="0" max="30" step="1" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Corner radius</span><span class="settings-value" data-value="radius"></span>
+                            </label>
+                            <input type="range" data-setting="radius" min="0" max="40" step="1" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Hide scrollbars</span>
+                                <input type="checkbox" data-setting="hideScrollbars" />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Typography</div>
+                        <div class="settings-row">
+                            <label class="settings-label" for="fontSelect"><span>Font</span></label>
+                            <select id="fontSelect" data-setting="font"></select>
+                        </div>
+                        <div class="settings-row" id="customFontRow" hidden>
+                            <label class="settings-label" for="customFont"><span>Font family</span></label>
+                            <input
+                                type="text"
+                                id="customFont"
+                                data-setting="customFont"
+                                placeholder="'My Font', system-ui, sans-serif"
+                            />
+                            <label class="settings-label" style="margin-top: 8px" for="customFontUrl">
+                                <span>Stylesheet URL</span>
+                            </label>
+                            <input
+                                type="url"
+                                id="customFontUrl"
+                                data-setting="customFontUrl"
+                                placeholder="https://fonts.googleapis.com/css2?family=..."
+                            />
+                            <div class="settings-hint">
+                                Leave the URL empty to use a font installed on this computer.
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Text size</span><span class="settings-value" data-value="fontScale"></span>
+                            </label>
+                            <input type="range" data-setting="fontScale" min="0.8" max="1.4" step="0.05" />
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Title</div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Size</span><span class="settings-value" data-value="logoScale"></span>
+                            </label>
+                            <input type="range" data-setting="logoScale" min="0.5" max="2" step="0.05" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label" for="titleFontSelect"><span>Font</span></label>
+                            <select id="titleFontSelect" data-setting="titleFont"></select>
+                        </div>
+                        <div class="settings-row" id="customTitleFontRow" hidden>
+                            <label class="settings-label" for="titleCustomFont"><span>Font family</span></label>
+                            <input
+                                type="text"
+                                id="titleCustomFont"
+                                data-setting="titleCustomFont"
+                                placeholder="'My Font', Georgia, serif"
+                            />
+                            <label class="settings-label" style="margin-top: 8px" for="titleCustomFontUrl">
+                                <span>Stylesheet URL</span>
+                            </label>
+                            <input
+                                type="url"
+                                id="titleCustomFontUrl"
+                                data-setting="titleCustomFontUrl"
+                                placeholder="https://fonts.googleapis.com/css2?family=..."
+                            />
+                            <div class="settings-hint">
+                                Leave the URL empty to use a font installed on this computer.
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label" for="titleWeight"><span>Weight</span></label>
+                            <select id="titleWeight" data-setting="titleWeight">
+                                <option value="400">Normal</option>
+                                <option value="600">Semibold</option>
+                                <option value="700">Bold</option>
+                                <option value="900">Black</option>
+                            </select>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Italic</span>
+                                <input type="checkbox" data-setting="titleItalic" />
+                            </label>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label" for="titleColorMode"><span>Color</span></label>
+                            <select id="titleColorMode" data-setting="titleColorMode">
+                                <option value="accent">Accent gradient</option>
+                                <option value="solid">Single color</option>
+                                <option value="gradient">Two-color gradient</option>
+                            </select>
+                        </div>
+                        <div class="settings-row" id="titleColorRow" hidden>
+                            <label class="settings-label">
+                                <span>Title color</span>
+                                <input type="color" data-setting="titleColor" />
+                            </label>
+                        </div>
+                        <div class="settings-row" id="titleColor2Row" hidden>
+                            <label class="settings-label">
+                                <span>Second color</span>
+                                <input type="color" data-setting="titleColor2" />
+                            </label>
+                        </div>
+                        <div class="settings-row" id="titleAngleRow">
+                            <label class="settings-label">
+                                <span>Gradient angle</span
+                                ><span class="settings-value" data-value="titleGradientAngle"></span>
+                            </label>
+                            <input type="range" data-setting="titleGradientAngle" min="0" max="360" step="5" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Outline</span><span class="settings-value" data-value="titleOutline"></span>
+                            </label>
+                            <input type="range" data-setting="titleOutline" min="0" max="6" step="0.5" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Outline color</span>
+                                <input type="color" data-setting="titleOutlineColor" />
+                            </label>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Card behind the title</span>
+                                <input type="checkbox" data-setting="titleCard" />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-page" data-page="background">
+                    <div class="settings-group">
+                        <div class="settings-group-title">Image</div>
+                        <div class="settings-btn-row">
+                            <button class="settings-action" id="pickImageBtn">Choose image…</button>
+                            <button class="settings-action danger" id="clearImageBtn">Remove</button>
+                        </div>
+                        <input type="file" id="imageInput" accept="image/*" hidden />
+                        <div class="settings-hint" id="imageHint">No image selected.</div>
+                        <div class="settings-row">
+                            <label class="settings-label" for="bgUrl"><span>…or image URL</span></label>
+                            <input
+                                type="url"
+                                id="bgUrl"
+                                data-setting="bgUrl"
+                                placeholder="https://example.com/photo.jpg"
+                            />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label" for="bgFit"><span>Fit</span></label>
+                            <select id="bgFit" data-setting="bgFit">
+                                <option value="cover">Cover</option>
+                                <option value="contain">Contain</option>
+                                <option value="100% 100%">Stretch</option>
+                                <option value="auto">Original size</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">
+                            Colors from image
+                            <span class="help" tabindex="0" aria-label="About colors from image">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+                                    <path d="M12 17h.01" />
+                                </svg>
+                                <span class="help-tip" role="tooltip">
+                                    Picks an accent, background and text color out of the image. With the automatic
+                                    option on, this happens every time you choose a new image.
+                                </span>
+                            </span>
+                        </div>
+                        <div class="settings-btn-row">
+                            <button class="settings-action" id="matchThemeBtn">Match colors to image</button>
+                        </div>
+                        <div class="settings-hint" id="themeStatus" hidden></div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Match automatically on a new image</span>
+                                <input type="checkbox" data-setting="autoTheme" />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Adjust</div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Dim</span><span class="settings-value" data-value="dim"></span>
+                            </label>
+                            <input type="range" data-setting="dim" min="0" max="1" step="0.05" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Blur</span><span class="settings-value" data-value="blur"></span>
+                            </label>
+                            <input type="range" data-setting="blur" min="0" max="20" step="1" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Scale</span><span class="settings-value" data-value="scale"></span>
+                            </label>
+                            <input type="range" data-setting="scale" min="1" max="3" step="0.05" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Position X</span><span class="settings-value" data-value="x"></span>
+                            </label>
+                            <input type="range" data-setting="x" min="-100" max="100" step="1" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Position Y</span><span class="settings-value" data-value="y"></span>
+                            </label>
+                            <input type="range" data-setting="y" min="-100" max="100" step="1" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-page" data-page="content">
+                    <div class="settings-group">
+                        <div class="settings-group-title">Text</div>
+                        <div class="settings-row">
+                            <label class="settings-label" for="pageTitle"><span>Tab title</span></label>
+                            <input type="text" id="pageTitle" data-setting="pageTitle" placeholder="New Tab" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label" for="greeting"><span>Greeting</span></label>
+                            <input type="text" id="greeting" data-setting="greeting" placeholder="Hello" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label" for="subtitleText">
+                                <span>Subtitle</span>
+                                <input type="checkbox" data-setting="showSubtitle" title="Show subtitle" />
+                            </label>
+                            <input type="text" id="subtitleText" data-setting="subtitle" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label" for="shortcutsHeading">
+                                <span>Shortcuts heading</span>
+                                <input type="checkbox" data-setting="showShortcutsTitle" title="Show heading" />
+                            </label>
+                            <input type="text" id="shortcutsHeading" data-setting="shortcutsTitle" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Show footer</span>
+                                <input type="checkbox" data-setting="showFooter" />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">
+                            Search
+                            <span class="help" tabindex="0" aria-label="About search">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+                                    <path d="M12 17h.01" />
+                                </svg>
+                                <span class="help-tip" role="tooltip">
+                                    Typing an address (github.com, localhost:3000, https://…) opens it directly;
+                                    anything with a space is a search. Start with ? to force a search. Ctrl+Enter opens
+                                    the result in a new tab. For a custom engine, use %s in the URL where the query
+                                    should go. With history on, recent sites and searches show up under the box while
+                                    you type — sites first.
+                                </span>
+                            </span>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label" for="engineSelect"><span>Search engine</span></label>
+                            <select id="engineSelect" data-setting="engine"></select>
+                        </div>
+                        <div class="settings-row" id="customEngineRow" hidden>
+                            <label class="settings-label" for="customEngineUrl"><span>Custom URL</span></label>
+                            <input
+                                type="url"
+                                id="customEngineUrl"
+                                data-setting="customEngineUrl"
+                                placeholder="https://example.com/search?q=%s"
+                            />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Remember recent searches and sites</span>
+                                <input type="checkbox" data-setting="rememberSearches" />
+                            </label>
+                            <div class="settings-btn-row">
+                                <button class="settings-action danger" id="clearHistoryBtn">
+                                    Clear recent searches
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">
+                            Icons
+                            <span class="help" tabindex="0" aria-label="About icons">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+                                    <path d="M12 17h.01" />
+                                </svg>
+                                <span class="help-tip" role="tooltip">
+                                    Shortcut icons are the sites' own favicons. With the fallback on, DuckDuckGo's icon
+                                    service is asked when a site has none; when off, only the site itself is contacted.
+                                </span>
+                            </span>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Use DuckDuckGo as icon fallback</span>
+                                <input type="checkbox" data-setting="iconFallback" />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-page" data-page="commands">
+                    <div class="settings-group">
+                        <div class="settings-group-title">
+                            Commands
+                            <span class="help" tabindex="0" aria-label="About commands">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+                                    <path d="M12 17h.01" />
+                                </svg>
+                                <span class="help-tip" role="tooltip">
+                                    Type / in the search box to run one. A search command takes the rest of the line as
+                                    the query; an open command opens all of its links in new tabs.
+                                </span>
+                            </span>
+                        </div>
+                        <div class="command-list" id="commandList"></div>
+                        <div class="settings-btn-row">
+                            <button class="settings-action" id="addCommandBtn">Add command…</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-page fill-page" data-page="css">
+                    <div class="settings-group fill">
+                        <div class="settings-group-title">
+                            Custom CSS
+                            <span class="help" tabindex="0" aria-label="About custom CSS">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+                                    <path d="M12 17h.01" />
+                                </svg>
+                                <span class="help-tip" role="tooltip">
+                                    Your rules are added after the page's own styles, so they win on equal specificity —
+                                    use !important if a rule doesn't take. Changes apply as you type and stay in this
+                                    browser. If something goes wrong, open the page with ?safe to load it without your
+                                    CSS.
+                                </span>
+                            </span>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Apply custom CSS</span>
+                                <input type="checkbox" data-setting="customCssEnabled" />
+                            </label>
+                        </div>
+                        <div class="settings-hint" id="safeModeNote" hidden>
+                            Safe mode is on (?safe in the address), so your CSS is not applied on this load.
+                        </div>
+                        <div class="settings-row editor-row">
+                            <textarea
+                                class="css-editor"
+                                id="cssEditor"
+                                spellcheck="false"
+                                autocapitalize="off"
+                                autocomplete="off"
+                                placeholder=":root {&#10;    --accent: #38bdf8;&#10;    --radius: 4px;&#10;}&#10;&#10;.shortcut-item {&#10;    width: 140px;&#10;}"
+                            ></textarea>
+                        </div>
+                        <div class="settings-btn-row">
+                            <button class="settings-action danger" id="clearCssBtn">Clear CSS</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-page" data-page="presets">
+                    <div class="settings-group">
+                        <div class="settings-group-title">
+                            Presets
+                            <span class="help" tabindex="0" aria-label="About presets">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+                                    <path d="M12 17h.01" />
+                                </svg>
+                                <span class="help-tip" role="tooltip">
+                                    A preset is a saved copy of your setup: styling (look, background, custom CSS),
+                                    content (texts, search engine), shortcuts, commands and widgets. Save one, then load
+                                    all of it or only the parts ticked below. Presets imported from a file may hold only
+                                    some parts — the row tells you which. Search history is never part of a preset.
+                                </span>
+                            </span>
+                        </div>
+                        <div class="preset-parts">
+                            <label><input type="checkbox" data-preset-part="style" checked /> Styling</label>
+                            <label><input type="checkbox" data-preset-part="content" checked /> Content</label>
+                            <label><input type="checkbox" data-preset-part="shortcuts" checked /> Shortcuts</label>
+                            <label><input type="checkbox" data-preset-part="commands" checked /> Commands</label>
+                            <label><input type="checkbox" data-preset-part="widgets" checked /> Widgets</label>
+                        </div>
+                        <div class="command-list" id="presetList"></div>
+                        <div class="settings-btn-row">
+                            <button class="settings-action" id="savePresetBtn">Save current setup…</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-page" data-page="widgets">
+                    <div class="settings-group">
+                        <div class="settings-group-title">
+                            Grid
+                            <span class="help" tabindex="0" aria-label="About the widget grid">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+                                    <path d="M12 17h.01" />
+                                </svg>
+                                <span class="help-tip" role="tooltip">
+                                    Widgets sit on a grid that covers the whole screen. Every widget is sized in cells,
+                                    so more cells mean smaller widgets. Use “Arrange widgets” to drag them around and to
+                                    resize them by grabbing any edge or corner.
+                                </span>
+                            </span>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Columns</span><span class="settings-value" id="gridColsValue"></span>
+                            </label>
+                            <input type="range" id="gridCols" min="2" max="24" step="1" />
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Rows</span><span class="settings-value" id="gridRowsValue"></span>
+                            </label>
+                            <input type="range" id="gridRows" min="2" max="16" step="1" />
+                        </div>
+                        <div class="settings-btn-row">
+                            <button class="settings-action" id="arrangeBtn">Arrange widgets</button>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <div class="settings-group-title">
+                            Widgets
+                            <span class="help" tabindex="0" aria-label="About widgets">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+                                    <path d="M12 17h.01" />
+                                </svg>
+                                <span class="help-tip" role="tooltip">
+                                    Clock, date, notes and to-do widgets are built in. An external widget runs code
+                                    someone else wrote inside a sandbox: it cannot read this page or your data and has
+                                    no network access unless you allow specific hosts for it.
+                                </span>
+                            </span>
+                        </div>
+                        <div class="command-list" id="widgetList"></div>
+                        <div class="settings-btn-row">
+                            <button class="settings-action" id="addWidgetBtn">Add widget…</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-page" data-page="data">
+                    <div class="settings-group">
+                        <div class="settings-group-title">
+                            Backup &amp; sharing
+                            <span class="help" tabindex="0" aria-label="About backups and sharing">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+                                    <path d="M12 17h.01" />
+                                </svg>
+                                <span class="help-tip" role="tooltip">
+                                    Export writes a file with only the parts you pick — share just your styling, or take
+                                    everything as a backup. Importing takes all the file holds, either straight into
+                                    this setup or as a new preset you can then load piece by piece. Search history is
+                                    never included; it has its own export below.
+                                </span>
+                            </span>
+                        </div>
+                        <div class="settings-btn-row">
+                            <button class="settings-action" id="exportBtn">Export…</button>
+                            <button class="settings-action" id="importBtn">Import…</button>
+                        </div>
+                        <input type="file" id="importInput" accept="application/json,.json" hidden />
+                    </div>
+                    <div class="settings-group">
+                        <div class="settings-group-title">
+                            Search history
+                            <span class="help" tabindex="0" aria-label="About history files">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+                                    <path d="M12 17h.01" />
+                                </svg>
+                                <span class="help-tip" role="tooltip">
+                                    Recent searches and sites belong to this browser only — they are not part of exports
+                                    or presets. Use these to carry them to another browser; importing adds the entries
+                                    to the ones you already have.
+                                </span>
+                            </span>
+                        </div>
+                        <div class="settings-btn-row">
+                            <button class="settings-action" id="exportHistoryBtn">Export history…</button>
+                            <button class="settings-action" id="importHistoryBtn">Import history…</button>
+                        </div>
+                        <input type="file" id="historyImportInput" accept="application/json,.json" hidden />
+                    </div>
+                    <div class="settings-group" id="extensionGroup" hidden>
+                        <div class="settings-group-title">
+                            Extension
+                            <span class="help" tabindex="0" aria-label="About the extension setting">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+                                    <path d="M12 17h.01" />
+                                </svg>
+                                <span class="help-tip" role="tooltip">
+                                    Chromium keeps the cursor in the address bar on a new tab and only lets a freshly
+                                    opened tab take it. With this on, each new tab is reopened that way so the search
+                                    box is focused, at the cost of the address bar showing the extension's address
+                                    instead of staying empty.
+                                </span>
+                            </span>
+                        </div>
+                        <div class="settings-row">
+                            <label class="settings-label">
+                                <span>Focus the search box on new tabs</span>
+                                <input type="checkbox" data-setting="newTabFocus" />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-group-title">Help</div>
+                        <div class="settings-btn-row">
+                            <button class="settings-action" id="showIntroBtn">Show the welcome tip again</button>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <div class="settings-group-title">Reset</div>
+                        <div class="settings-btn-row">
+                            <button class="settings-action danger" id="resetLookBtn">Reset look</button>
+                            <button class="settings-action danger" id="resetAllBtn">Reset everything</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="corner-actions">
+                <a class="corner-btn about-btn" href="about.html" title="About this page">
+                    <svg class="icon-stroke" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <g
+                            transform="translate(12 12) scale(1.3) translate(-12 -12)"
+                            vector-effect="non-scaling-stroke"
+                        >
+                            <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" vector-effect="non-scaling-stroke" />
+                            <path d="M12 17h.01" vector-effect="non-scaling-stroke" />
+                        </g>
+                    </svg>
+                </a>
+                <a
+                    class="corner-btn"
+                    href="https://github.com/dalibor-osu/tab"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Source on GitHub"
+                >
+                    <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path
+                            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+                        />
+                    </svg>
+                </a>
+                <button class="corner-btn" id="settingsBtn" title="Customize">
+                    <svg class="icon-stroke" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                        />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="modalOverlay">
+            <div class="modal">
+                <h3 class="modal-title" id="modalTitle">Add New Shortcut</h3>
+                <div class="form-group">
+                    <label class="form-label" for="shortcutName">Name</label>
+                    <input type="text" class="form-input" id="shortcutName" placeholder="e.g., Gmail" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="shortcutUrl">URL</label>
+                    <input type="url" class="form-input" id="shortcutUrl" placeholder="https://mail.google.com" />
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn btn-cancel" id="cancelBtn">Cancel</button>
+                    <button class="modal-btn btn-save" id="saveBtn">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="commandOverlay">
+            <div class="modal">
+                <h3 class="modal-title" id="commandModalTitle">Add Command</h3>
+                <div class="form-group">
+                    <label class="form-label" for="commandName">Name</label>
+                    <input type="text" class="form-input" id="commandName" placeholder="work" autocomplete="off" />
+                    <div class="settings-hint">Letters, numbers, - and _ only. You run it as /name.</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="commandType">Type</label>
+                    <select class="form-select" id="commandType">
+                        <option value="open">Open links</option>
+                        <option value="search">Search template</option>
+                    </select>
+                </div>
+                <div class="form-group" id="commandUrlsGroup">
+                    <label class="form-label" for="commandUrls">Links, one per line</label>
+                    <textarea
+                        class="form-textarea"
+                        id="commandUrls"
+                        placeholder="https://mail.example.com&#10;https://calendar.example.com"
+                    ></textarea>
+                </div>
+                <div class="form-group" id="commandTemplateGroup" hidden>
+                    <label class="form-label" for="commandTemplate">URL template</label>
+                    <input
+                        type="url"
+                        class="form-input"
+                        id="commandTemplate"
+                        placeholder="https://www.youtube.com/results?search_query=%s"
+                    />
+                    <div class="settings-hint">Use %s where the query should go.</div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn btn-cancel" id="commandCancelBtn">Cancel</button>
+                    <button class="modal-btn btn-save" id="commandSaveBtn">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="context-menu" id="contextMenu" hidden>
+            <div class="context-menu-title" id="contextMenuTitle"></div>
+            <button type="button" id="contextEditBtn">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 21.5 2 23l1.5-5.5L17 3z" />
+                </svg>
+                Edit
+            </button>
+            <button type="button" class="danger" id="contextDeleteBtn">
+                <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M4 4l8 8M12 4l-8 8" />
+                </svg>
+                Remove
+            </button>
+        </div>
+
+        <div class="toast" id="toast" hidden></div>
+
+        <div class="modal-overlay" id="widgetOverlay">
+            <div class="modal modal-wide">
+                <h3 class="modal-title" id="widgetModalTitle">Add Widget</h3>
+                <div class="form-group">
+                    <label class="form-label" for="widgetType">Type</label>
+                    <select class="form-select" id="widgetType"></select>
+                </div>
+                <div class="form-group" data-widget-fields="clock">
+                    <label class="form-label" for="widgetClockStyle">Style</label>
+                    <select class="form-select" id="widgetClockStyle">
+                        <option value="digital">Digital</option>
+                        <option value="analog">Analog</option>
+                    </select>
+                    <div class="modal-options compact">
+                        <label><input type="checkbox" id="widgetClockSeconds" /> Show seconds</label>
+                        <label><input type="checkbox" id="widgetClockHour12" /> 12-hour clock</label>
+                    </div>
+                </div>
+                <div class="form-group" data-widget-fields="date">
+                    <label class="form-label" for="widgetDateFormat">Format</label>
+                    <select class="form-select" id="widgetDateFormat">
+                        <option value="full">Weekday and full date</option>
+                        <option value="long">Full date</option>
+                        <option value="short">Short</option>
+                        <option value="numeric">Numeric</option>
+                    </select>
+                </div>
+                <div class="form-group" data-widget-fields="notes">
+                    <label class="form-label" for="widgetNoteColor">Note colour</label>
+                    <input type="color" class="form-input" id="widgetNoteColor" />
+                </div>
+                <div class="form-group" data-widget-fields="todo">
+                    <label class="form-label" for="widgetTodoTitle">Title</label>
+                    <input type="text" class="form-input" id="widgetTodoTitle" maxlength="60" placeholder="To-do" />
+                </div>
+                <div data-widget-fields="external">
+                    <div class="form-group">
+                        <label class="form-label" for="widgetSource">Load the code from</label>
+                        <div class="widget-source">
+                            <input
+                                type="url"
+                                class="form-input"
+                                id="widgetSource"
+                                placeholder="https://raw.githubusercontent.com/…/widget.html"
+                            />
+                            <button type="button" class="modal-btn btn-cancel small" id="widgetFetchBtn">Fetch</button>
+                            <button type="button" class="modal-btn btn-cancel small" id="widgetFileBtn">File…</button>
+                        </div>
+                        <input type="file" id="widgetFileInput" accept=".html,.htm,.txt,text/html,text/plain" hidden />
+                        <div class="settings-hint">
+                            A direct https link to the widget file (a raw GitHub file or a release asset works) or a
+                            file from this computer. The code is copied into the box below and stays as it is until you
+                            fetch again.
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="widgetCode">Widget code (HTML, CSS and JavaScript)</label>
+                        <textarea
+                            class="form-textarea code"
+                            id="widgetCode"
+                            spellcheck="false"
+                            autocapitalize="off"
+                            autocomplete="off"
+                            placeholder="&lt;div id=&quot;out&quot;&gt;Hello&lt;/div&gt;&#10;&lt;script&gt;&#10;    tab.on('init', () =&gt; { ... });&#10;&lt;/script&gt;"
+                        ></textarea>
+                        <div class="settings-hint">
+                            Runs in a sandbox: it cannot see this page or your data, and it has no network access except
+                            tab.fetch() to the hosts you allow below.
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="widgetHosts">Allowed hosts (comma separated)</label>
+                        <input type="text" class="form-input" id="widgetHosts" placeholder="api.example.com" />
+                        <div class="settings-hint" id="widgetHostsHint" hidden></div>
+                        <div class="widget-grant" id="widgetGrantRow" hidden>
+                            <button type="button" class="settings-action" id="widgetGrantBtn">
+                                Allow the extension to reach these hosts directly
+                            </button>
+                            <div class="settings-hint" id="widgetGrantHint"></div>
+                        </div>
+                    </div>
+                    <div class="form-group" id="widgetConfigGroup" hidden>
+                        <label class="form-label">Widget settings</label>
+                        <div id="widgetConfigFields"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Size and position (cells)</label>
+                    <div class="widget-geometry">
+                        <label>W <input type="number" class="form-input" id="widgetW" min="1" /></label>
+                        <label>H <input type="number" class="form-input" id="widgetH" min="1" /></label>
+                        <label>X <input type="number" class="form-input" id="widgetX" min="1" /></label>
+                        <label>Y <input type="number" class="form-input" id="widgetY" min="1" /></label>
+                    </div>
+                    <div class="settings-hint">
+                        X and Y count from the top-left cell. You can also move and resize widgets with “Arrange
+                        widgets”.
+                    </div>
+                </div>
+                <div class="form-group modal-options compact">
+                    <label><input type="checkbox" id="widgetCard" checked /> Card background</label>
+                </div>
+                <p class="modal-text modal-error" id="widgetError" hidden></p>
+                <div class="modal-buttons">
+                    <button class="modal-btn btn-cancel" id="widgetCancelBtn">Cancel</button>
+                    <button class="modal-btn btn-save" id="widgetSaveBtn">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="presetOverlay">
+            <div class="modal">
+                <h3 class="modal-title" id="presetModalTitle">Save Preset</h3>
+                <div class="form-group">
+                    <label class="form-label" for="presetName">Name</label>
+                    <input type="text" class="form-input" id="presetName" placeholder="e.g., Work" maxlength="40" />
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn btn-cancel" id="presetCancelBtn">Cancel</button>
+                    <button class="modal-btn btn-save" id="presetSaveBtn">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="exportOverlay">
+            <div class="modal">
+                <h3 class="modal-title">Export</h3>
+                <p class="modal-text">Pick what goes into the file. Untick anything you don't want to share.</p>
+                <div class="form-group modal-options">
+                    <label>
+                        <input type="checkbox" data-export-part="style" checked />
+                        Styling <span>look, background, custom CSS</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" data-export-part="content" checked />
+                        Content <span>texts, search engine</span>
+                    </label>
+                    <label><input type="checkbox" data-export-part="shortcuts" checked /> Shortcuts</label>
+                    <label><input type="checkbox" data-export-part="commands" checked /> Commands</label>
+                    <label><input type="checkbox" data-export-part="widgets" checked /> Widgets</label>
+                    <label>
+                        <input type="checkbox" id="exportPresetsCheck" />
+                        Saved presets <span>for a full backup</span>
+                    </label>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn btn-cancel" id="exportCancelBtn">Cancel</button>
+                    <button class="modal-btn btn-save" id="exportConfirmBtn">Export</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="importOverlay">
+            <div class="modal">
+                <h3 class="modal-title">Import</h3>
+                <p class="modal-text" id="importSummary"></p>
+                <div class="form-group modal-options">
+                    <label>
+                        <input type="radio" name="importMode" id="importModeApply" value="apply" checked />
+                        Apply to this setup now
+                    </label>
+                    <label id="importAsPresetRow">
+                        <input type="radio" name="importMode" id="importModePreset" value="preset" />
+                        Save as a new preset
+                    </label>
+                </div>
+                <div class="form-group" id="importNameGroup" hidden>
+                    <label class="form-label" for="importPresetName">Preset name</label>
+                    <input type="text" class="form-input" id="importPresetName" maxlength="40" />
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn btn-cancel" id="importCancelBtn">Cancel</button>
+                    <button class="modal-btn btn-save" id="importConfirmBtn">Import</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="confirmOverlay">
+            <div class="modal">
+                <h3 class="modal-title" id="confirmTitle">Remove shortcut?</h3>
+                <p class="modal-text" id="confirmText"></p>
+                <div class="modal-buttons">
+                    <button class="modal-btn btn-cancel" id="confirmCancelBtn">Cancel</button>
+                    <button class="modal-btn btn-danger" id="confirmDeleteBtn">Remove</button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "tabWidth": 4,
+  "printWidth": 120,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "arrowParens": "avoid",
+  "endOfLine": "lf",
+  "overrides": [
+    {
+      "files": ["*.json", ".prettierrc"],
+      "options": { "tabWidth": 2 }
+    }
+  ]
+}
